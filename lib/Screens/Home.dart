@@ -1,11 +1,9 @@
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:meal/DataBase/Fetch_DB.dart';
+import 'package:provider/provider.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -13,13 +11,39 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  String name = "";
+  
+  
+
   @override
   Widget build(BuildContext context) {
+    final value = Provider.of<String>(context);
+    Fetch getname = Fetch(uid: value);
+
+    Future display() async{
+      String info = await getname.getuserInfo();
+      return info;
+    }
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xA9B86324),
-        title: Center(child: Text(widget.title)),
-      ),
+        backgroundColor: const Color.fromARGB(169, 126, 3, 3),
+        title: FutureBuilder(
+          future: display(),
+          builder: (context, snapshot) {
+             if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: 
+                  Text("Welcome back", style: TextStyle(color: Colors.white)),); 
+              } else if (snapshot.hasError) {
+                return Text('We have encountered an error');
+                } else {
+                  final name = snapshot.data!;
+                  return Center(child: 
+                  Text("Welcome back " + name, style: TextStyle(color: Colors.white)),);
+                  }
+                  }
+                  ),
+                    ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -27,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
           EasyDateTimeLine(
             initialDate: DateTime.now(),
             onDateChange: (selectedDate) async{
-              await Fetch().getRecipee();
+              await Fetch(uid: value).getRecipee();
               print(selectedDate);
               //`selectedDate` the new date selected.
             },
@@ -37,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             dayProps: const EasyDayProps(
               height: 80,
-              todayHighlightColor: Colors.deepOrangeAccent,
+              todayHighlightColor: Color.fromARGB(255, 252, 13, 13),
               todayStyle: DayStyle(
                 borderRadius: 30
               ),
@@ -50,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Color(0xffe3dfdc),
-                      Color(0xffe8b276),
+                      Color.fromARGB(255, 179, 12, 12),
                     ],
                   ),
                 ),
