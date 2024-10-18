@@ -1,6 +1,7 @@
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:meal/DataBase/Fetch_DB.dart';
+import 'package:meal/DataBase/Write_DB.dart';
 import 'package:provider/provider.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -12,8 +13,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
 
   String name = "";
-  
-  
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +20,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Fetch getname = Fetch(uid: value);
 
     Future display() async{
-      String info = await getname.getuserInfo();
+      String info = await getname.getUserInfo();
       return info;
     }
 
@@ -51,7 +50,8 @@ class _MyHomePageState extends State<MyHomePage> {
           EasyDateTimeLine(
             initialDate: DateTime.now(),
             onDateChange: (selectedDate) async{
-              await Fetch(uid: value).getRecipee();
+              // await Fetch(uid: value).getRecipee();
+              await Write(uid: value).addUser();
               print(selectedDate);
               //`selectedDate` the new date selected.
             },
