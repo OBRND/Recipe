@@ -12,7 +12,6 @@ class Fetch{
   final CollectionReference Cookbook = FirebaseFirestore.instance.collection('Cookbook');
   final CollectionReference Schedule = FirebaseFirestore.instance.collection('Schedule');
 
-
   Future getUserInfo() async{
 
     DocumentSnapshot User_Profile = await User
