@@ -1,7 +1,6 @@
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
-import '../DataBase/Fetch_DB.dart';
-import '../DataBase/Write_DB.dart';
+import 'package:meal/DataBase/Fetch_DB.dart';
 import 'package:provider/provider.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -50,8 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
           EasyDateTimeLine(
             initialDate: DateTime.now(),
             onDateChange: (selectedDate) async{
-              dynamic x = await Fetch(uid: value).getMealschedule('18/11/2024');
-              print(x);
+              await Fetch(uid: value).getRecipee();
               print(selectedDate);
               await Fetch(uid: value).getAllRecipes();
               //`selectedDate` the new date selected.

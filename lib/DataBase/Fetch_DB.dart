@@ -16,11 +16,53 @@ class Fetch{
 
     DocumentSnapshot User_Profile = await User
         .doc('$uid').get();
+<<<<<<< HEAD
     String name = User_Profile["name"];
+=======
+    String name = User_Profile["Name"];
+>>>>>>> 41d996a0dd9bc1721f538056832e12eabf0331e5
     return name;
   }
 
   Future getShoppinglist() async{
+<<<<<<< HEAD
+=======
+
+    DocumentSnapshot Shoppinglist = await Shopping
+        .doc('$uid').get();
+    String list = Shoppinglist[""];
+    return list;
+  }
+
+  Future getMealschedule() async{
+
+    DocumentSnapshot schedule = await Schedule
+        .doc('$uid').get();
+    Map dates = schedule['meals'];
+    Map meals = dates['18/11/2024'];
+    String recipeID = meals['breakfast'];
+
+    return 0;
+  }
+
+  Future getPublicschedule() async{
+
+    DocumentSnapshot Publicscheduled = await Schedule
+        .doc('Public').get();
+    List schedule = Publicscheduled[""];
+
+    return 0;
+  }
+
+  Future getRecipe(String recipeId) async{
+
+    DocumentSnapshot recipe = await Recipe
+        .doc(recipeId).get();
+
+    return 0;
+  }
+
+>>>>>>> 41d996a0dd9bc1721f538056832e12eabf0331e5
 
     DocumentSnapshot Shoppinglist = await Shopping
         .doc('$uid').get();
