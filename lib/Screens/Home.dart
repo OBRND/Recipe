@@ -49,7 +49,6 @@ class _MyHomePageState extends State<MyHomePage> {
           EasyDateTimeLine(
             initialDate: DateTime.now(),
             onDateChange: (selectedDate) async{
-              await Fetch(uid: value).getRecipee();
               print(selectedDate);
               await Fetch(uid: value).getAllRecipes();
               //`selectedDate` the new date selected.

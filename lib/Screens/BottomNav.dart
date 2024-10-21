@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal/Screens/Recipe.dart';
 import 'package:meal/Screens/Home.dart';
 import 'package:meal/Screens/Meals.dart';
 import 'package:meal/Screens/Shopping_list.dart';
@@ -65,5 +66,5 @@ class _bottomNavState extends State<bottomNav> {
 List<Widget> _listOfWidget = <Widget>[
   const Meals(),
   MyHomePage(),
-  const ShoppingList(),
+  const Recipes(),
 ];
