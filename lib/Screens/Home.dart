@@ -16,10 +16,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final value = Provider.of<String>(context);
-    Fetch getname = Fetch(uid: value);
+    Fetch User = Fetch(uid: value);
 
     Future display() async{
-      String info = await getname.getUserInfo();
+      String info = await User.getUserInfo();
       return info;
     }
 

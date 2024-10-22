@@ -83,9 +83,7 @@ class Fetch{
       List<Map<String, dynamic>> recipes = querySnapshot.docs.map((doc) {
         return {
           'id': doc.id,
-          // Add the document ID if you need to keep track of it
           ...doc.data() as Map<String, dynamic>
-          // Spread the data from each recipe document
         };
       }).toList();
       print(recipes);
@@ -95,6 +93,27 @@ class Fetch{
       print('Error fetching recipes: ${e.toString()}');
       return [];
     }
+  }
+
+  Future<List<Map<String, dynamic>>> getRecipesByType(int index) async {
+
+    List<String> mealTypes = ['breakfast', 'main dish', 'dessert', 'snack'];
+
+    if (index < 0 || index >= mealTypes.length) {
+      print('Invalid index. Please provide a value between 0 and ${mealTypes
+          .length - 1}.');
+      return [];
+    }
+    String selectedMealType = mealTypes[index];
+
+    List<Map<String, dynamic>> allRecipes = await getAllRecipes();
+
+    List<Map<String, dynamic>> filteredRecipes = allRecipes.where((recipe) {
+      return recipe['course'] ==
+          selectedMealType;
+    }).toList();
+    print(filteredRecipes);
+    return filteredRecipes;
   }
 
   Future getRecipe(String recipeId) async{
