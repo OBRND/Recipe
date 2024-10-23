@@ -130,4 +130,11 @@ class Fetch{
       'cal' : cal};
   }
 
+  Future getSavedRecipe() async {
+    DocumentSnapshot Savedrecipe = await User
+        .doc(uid).get();
+    List reecipeId = Savedrecipe['savedRecipes'];
+
+    return reecipeId;
+  }
 }

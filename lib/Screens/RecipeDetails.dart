@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:meal/DataBase/Write_DB.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:provider/provider.dart';
+
+import '../DataBase/Fetch_DB.dart';
 
 class RecipeDetailsPage extends StatefulWidget {
   final String imageURL;
+  final String recipeID;
   final String foodName;
   final List<Ingredient> ingredients;
 
   const RecipeDetailsPage({
     Key? key,
     required this.imageURL,
+    required this.recipeID,
     required this.foodName,
     required this.ingredients,
   }) : super(key: key);
@@ -19,7 +25,7 @@ class RecipeDetailsPage extends StatefulWidget {
 
 class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   Color primaryColor = Colors.white;
-
+  bool pressed = false;
 
   @override
   void initState() {
@@ -28,6 +34,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final value = Provider.of<String>(context);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -40,8 +47,18 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
           },
           color: Colors.black,
         ),
+        actions: [
+          IconButton(onPressed: () {
+            Write(uid: value).saveRecipe(widget.recipeID);
+            setState(() {
+              pressed = true;
+            });
+          },
+              icon: Icon(pressed == true ? Icons.favorite : Icons.favorite_border))
+        ],
       ),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Image with overlay
@@ -100,33 +117,33 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                           padding: const EdgeInsets.all(15.0),
                           child: Text('Instructions'),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              flex: 5,
-                              child: Text(
-                                widget.ingredients[index].name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 4,
-                              child: Text(
-                                widget.ingredients[index].measurement,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black54,
-                                ),
-                                textAlign: TextAlign.right,
-                              ),
-                            ),
-                          ],
-                        ),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+                        roww(index),
+
                       ],
                     ),
                   );
@@ -138,6 +155,38 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
       ),
     );
   }
+
+  Widget roww(int index){
+    return  Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          flex: 5,
+          child: Text(
+            widget.ingredients[index].name,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 4,
+          child: Text(
+            widget.ingredients[index].measurement,
+            style: const TextStyle(
+              fontSize: 15,
+              color: Colors.black54,
+            ),
+            textAlign: TextAlign.right,
+          ),
+        ),
+      ],
+    );
+
+  }
+
 }
 
 class Ingredient {

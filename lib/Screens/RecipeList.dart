@@ -85,6 +85,7 @@ class _RecipeListState extends State<RecipeList> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => RecipeDetailsPage(
+                          recipeID: filteredRecipes[index]['id'],
                           imageURL:
                           'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
                           foodName: filteredRecipes[index]['name'],

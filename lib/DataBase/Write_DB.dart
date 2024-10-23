@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meal/DataBase/Fetch_DB.dart';
 
 class Write{
 
@@ -28,9 +29,11 @@ class Write{
     });
   }
 
-  Future saveRecipe() async{
-    return await user.doc('001').set({
-      "savedRecipes" : [001, 002],
+  Future saveRecipe(String id) async{
+    List Savedrecipe = await Fetch(uid: uid).getSavedRecipe();
+    Savedrecipe.add(id);
+    return await user.doc('001').update({
+      "savedRecipes" : Savedrecipe,
     });
   }
 
