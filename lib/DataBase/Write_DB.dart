@@ -25,15 +25,23 @@ class Write{
       "name" : "Jon",
       "children" : childInfo,
       'SavedRecipe' : '',
-      'email' : ''
+      'email' : '',
+      'recent' : null,
+      'savedRecipes' : null
     });
   }
 
   Future saveRecipe(String id) async{
-    List Savedrecipe = await Fetch(uid: uid).getSavedRecipe();
-    Savedrecipe.add(id);
-    return await user.doc('001').update({
-      "savedRecipes" : Savedrecipe,
+
+    return await user.doc(uid).update({
+      "savedRecipes" : FieldValue.arrayUnion([id])
+    });
+  }
+
+  Future updateRecent(String id) async{
+
+    return await user.doc(uid).update({
+      "recent" : FieldValue.arrayUnion([id])
     });
   }
 

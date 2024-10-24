@@ -116,7 +116,7 @@ class Fetch{
     return filteredRecipes;
   }
 
-  Future getRecipe(String recipeId) async{
+  Future<Map<String, dynamic>> getRecipe(String recipeId) async{
 
     DocumentSnapshot recipe = await Recipe
         .doc(recipeId).get();
@@ -130,11 +130,41 @@ class Fetch{
       'cal' : cal};
   }
 
-  Future getSavedRecipe() async {
-    DocumentSnapshot Savedrecipe = await User
-        .doc(uid).get();
-    List reecipeId = Savedrecipe['savedRecipes'];
+  Future getSavedRecipeIds(bool selector) async {
 
-    return reecipeId;
+    DocumentSnapshot Savedrecipe = await User.doc(uid).get();
+    if(!selector) {
+      List reecipeId = Savedrecipe['savedRecipes'] ?? [];
+      return reecipeId;
+    } else {
+      List reecipeId = Savedrecipe['recent'] ?? [];
+      return reecipeId;
+    }
   }
+
+ Future getSavedRecipes(bool selector) async {
+
+   List recipeIds = await getSavedRecipeIds(selector);
+
+   if (recipeIds.isEmpty) {
+     print("No data");
+     return [];
+   }
+
+   List<Map<String, dynamic>> recipes = await Future.wait(
+     recipeIds.map((id) async {
+       Map recipeDetails = await getRecipe(id);
+       return {
+         'id': id,
+         'name': recipeDetails['name'],
+         'cal': recipeDetails['cal']
+       };
+     }).toList(),
+   );
+
+   return recipes;
+ }
+
+
+
 }

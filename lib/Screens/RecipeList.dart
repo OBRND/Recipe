@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../DataBase/Write_DB.dart';
 import 'RecipeDetails.dart';
 
 class RecipeList extends StatefulWidget {
@@ -17,6 +19,7 @@ class _RecipeListState extends State<RecipeList> {
 
   @override
   Widget build(BuildContext context) {
+    final value = Provider.of<String>(context);
     List<Map<String, dynamic>> filteredRecipes = widget.recipes
         .where((recipe) =>
     recipe['name'].toLowerCase().contains(searchQuery.toLowerCase()) &&
@@ -82,6 +85,7 @@ class _RecipeListState extends State<RecipeList> {
                 itemCount: filteredRecipes.length,
                 itemBuilder: (context, index) => InkWell(
                   onTap: () {
+                    Write(uid: value).updateRecent(filteredRecipes[index]['id']);
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => RecipeDetailsPage(
@@ -107,7 +111,7 @@ class _RecipeListState extends State<RecipeList> {
                             width: 100,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12.0),
-                              image: DecorationImage(
+                              image: const DecorationImage(
                                 image: NetworkImage(
                                     'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066'),
                                 fit: BoxFit.cover,
@@ -118,7 +122,7 @@ class _RecipeListState extends State<RecipeList> {
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
                               filteredRecipes[index]['name'],
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.black54,
                                 fontWeight: FontWeight.w700,
                               ),

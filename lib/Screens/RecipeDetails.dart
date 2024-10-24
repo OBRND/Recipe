@@ -26,15 +26,28 @@ class RecipeDetailsPage extends StatefulWidget {
 class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   Color primaryColor = Colors.white;
   bool pressed = false;
+  bool isSaved = false;
 
   @override
   void initState() {
     super.initState();
-   }
+  }
+
+  Future<void> checkIfSaved(String uid) async {
+    List savedRecipes = await Fetch(uid: uid).getSavedRecipeIds(false);
+    if (savedRecipes.contains(widget.recipeID)) {
+      setState(() {
+        isSaved = true;
+        pressed = true; // If it’s saved, the icon should show as filled.
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final value = Provider.of<String>(context);
+    checkIfSaved(value);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -48,13 +61,21 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
           color: Colors.black,
         ),
         actions: [
-          IconButton(onPressed: () {
-            Write(uid: value).saveRecipe(widget.recipeID);
-            setState(() {
-              pressed = true;
-            });
-          },
-              icon: Icon(pressed == true ? Icons.favorite : Icons.favorite_border))
+          IconButton(
+            onPressed: isSaved
+                ? null // Disable the button if the recipe is already saved.
+                : () {
+              Write(uid: value).saveRecipe(widget.recipeID);
+              setState(() {
+                pressed = true;
+                isSaved = true; // Once pressed, mark it as saved.
+              });
+            },
+            icon: Icon(
+              pressed ? Icons.favorite : Icons.favorite_border,
+              color: pressed ? Colors.red : Colors.grey,
+            ),
+          )
         ],
       ),
       body: Column(

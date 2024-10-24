@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal/DataBase/Write_DB.dart';
 import 'package:meal/Screens/RecipeDetails.dart';
 import 'package:meal/Screens/RecipeList.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ class Recipes extends StatefulWidget {
 class _RecipesState extends State<Recipes> {
   @override
   Widget build(BuildContext context) {
+    final value = Provider.of<String>(context);
     return Scaffold(
         body: Column(
             children: [
@@ -28,11 +30,14 @@ class _RecipesState extends State<Recipes> {
                     child: Column(
                       children: [
                         // Tab selector for switching between saved and recent recipes.
-                        const TabBar(
+                        TabBar(
                           labelColor: Colors.black,
                           unselectedLabelColor: Colors.black45,
                           indicatorColor: Color(0xD7DF1313),
-                          tabs: [
+                          onTap: (i) {
+                            print(i);
+                          },
+                          tabs: const [
                             Tab(text: 'Recently Viewed'),
                             Tab(text: 'Saved Recipes'),
                           ],
@@ -40,27 +45,8 @@ class _RecipesState extends State<Recipes> {
                         Expanded(
                           child: TabBarView(
                             children: [
-                              // First tab: Saved Recipes content.
-                              ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: 4,
-                                // Replace with the number of saved recipes.
-                                itemBuilder: (context, index) =>
-                                    ListTile(
-                                      title: Text(
-                                          'Saved Recipe $index'), // Replace with actual saved recipe data.
-                                    ),
-                              ),
-                              // Second tab: Recently Viewed Recipes content.
-                              ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: 4,
-                                itemBuilder: (context, index) =>
-                                    ListTile(
-                                      title: Text(
-                                          'Recently Viewed $index'),
-                                    ),
-                              ),
+                              commonFuture(value, true),
+                              commonFuture(value, false)
                             ],
                           ),
                         ),
@@ -71,6 +57,83 @@ class _RecipesState extends State<Recipes> {
               ),
             ]
         )
+    );
+  }
+
+  Widget commonFuture(String value, bool selector){
+    return  FutureBuilder(
+      future: Fetch(uid: value).getSavedRecipes(selector), // Fetch saved recipes.
+      builder: (context, snapshot) {
+        // Show loading indicator while fetching data.
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        // Check if there's an error.
+        if (snapshot.hasError) {
+          return Center(child: Text('Error loading saved recipes.'));
+        }
+        // Check if data is available.
+        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+          return ListView.builder(
+            shrinkWrap: true,
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              final recipe = snapshot.data![snapshot.data!.length - 1 - index];
+              return InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => RecipeDetailsPage(
+                        recipeID: recipe['id'],
+                        imageURL:
+                        'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
+                        foodName: recipe['name'],
+                        ingredients: [
+                          Ingredient(
+                              name: 'pepper', measurement: '20 oz')
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  height: 100,
+                  child: Card(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 100,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12.0),
+                            image: const DecorationImage(
+                              image: NetworkImage(
+                                  'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            recipe['name'],
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        }
+        // Show a message if there are no saved recipes.
+        return Center(child: Text('No saved recipes found.'));
+      },
     );
   }
 
