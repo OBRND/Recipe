@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:meal/DataBase/Fetch_DB.dart';
+import 'package:meal/DataBase/fetch_db.dart';
 
 class Write{
 
@@ -8,7 +8,7 @@ class Write{
 
   final CollectionReference user = FirebaseFirestore.instance.collection('Users');
 
-  Future addUser() async{
+  Future addUser(String firstname, String email) async{
     List<Map<String, dynamic>> childInfo = [
       {
         'name': 'Alice',
@@ -21,11 +21,10 @@ class Write{
         'dietPreference' : 'Non spicy'
       },
     ];
-    return await user.doc('001').set({
-      "name" : "Jon",
+    return await user.doc(uid).set({
+      "name" : firstname,
       "children" : childInfo,
-      'SavedRecipe' : '',
-      'email' : '',
+      'email' : email,
       'recent' : null,
       'savedRecipes' : null
     });

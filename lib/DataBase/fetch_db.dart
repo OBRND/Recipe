@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'Write_DB.dart';
+import 'write_db.dart';
 
 class Fetch{
 
@@ -130,21 +130,9 @@ class Fetch{
       'cal' : cal};
   }
 
-  Future getSavedRecipeIds(bool selector) async {
+ Future getSavedRecipes(List Ids) async {
 
-    DocumentSnapshot Savedrecipe = await User.doc(uid).get();
-    if(!selector) {
-      List reecipeId = Savedrecipe['savedRecipes'] ?? [];
-      return reecipeId;
-    } else {
-      List reecipeId = Savedrecipe['recent'] ?? [];
-      return reecipeId;
-    }
-  }
-
- Future getSavedRecipes(bool selector) async {
-
-   List recipeIds = await getSavedRecipeIds(selector);
+   List recipeIds = Ids;
 
    if (recipeIds.isEmpty) {
      print("No data");

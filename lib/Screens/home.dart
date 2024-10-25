@@ -1,6 +1,7 @@
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
-import 'package:meal/DataBase/Fetch_DB.dart';
+import 'package:meal/Auth/auth_service.dart';
+import 'package:meal/Models/user_data.dart';
 import 'package:provider/provider.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -15,33 +16,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final value = Provider.of<String>(context);
-    Fetch User = Fetch(uid: value);
-
-    Future display() async{
-      String info = await User.getUserInfo();
-      return info;
-    }
+    final User = Provider.of<UserDataModel?>(context);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(169, 126, 3, 3),
-        title: FutureBuilder(
-          future: display(),
-          builder: (context, snapshot) {
-             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: 
-                  Text("Welcome back", style: TextStyle(color: Colors.white)),); 
-              } else if (snapshot.hasError) {
-                return Text('We have encountered an error');
-                } else {
-                  final name = snapshot.data!;
-                  return Center(child: 
-                  Text("Welcome back " + name, style: TextStyle(color: Colors.white)),);
-                  }
-                  }
-                  ),
-                    ),
+        title: Text(User == null ? "Welcome back " : "Welcome back " + User.name, style: TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(onPressed: () {
+            AuthService().sign_out();
+          }, icon: Icon(Icons.logout, color: Colors.white))
+        ],
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -50,9 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
             initialDate: DateTime.now(),
             onDateChange: (selectedDate) async{
               print(selectedDate);
-              await Fetch(uid: value).getAllRecipes();
-              //`selectedDate` the new date selected.
-            },
+             },
             headerProps: const EasyHeaderProps(
               monthPickerType: MonthPickerType.switcher,
               dateFormatter: DateFormatter.fullDateDMY(),

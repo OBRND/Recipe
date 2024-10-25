@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:meal/Models/user_id.dart';
 import 'package:provider/provider.dart';
-import '../DataBase/Write_DB.dart';
-import 'RecipeDetails.dart';
+import '../DataBase/write_db.dart';
+import '../Models/user_data.dart';
+import 'recipe_details.dart';
 
 class RecipeList extends StatefulWidget {
   final List<Map<String, dynamic>> recipes;
+  final UserDataModel? userData;
 
-  const RecipeList({required this.recipes});
+  const RecipeList({required this.recipes, required this.userData});
 
   @override
   _RecipeListState createState() => _RecipeListState();
@@ -19,7 +22,8 @@ class _RecipeListState extends State<RecipeList> {
 
   @override
   Widget build(BuildContext context) {
-    final value = Provider.of<String>(context);
+    final user = Provider.of<UserID>(context);
+
     List<Map<String, dynamic>> filteredRecipes = widget.recipes
         .where((recipe) =>
     recipe['name'].toLowerCase().contains(searchQuery.toLowerCase()) &&
@@ -85,7 +89,7 @@ class _RecipeListState extends State<RecipeList> {
                 itemCount: filteredRecipes.length,
                 itemBuilder: (context, index) => InkWell(
                   onTap: () {
-                    Write(uid: value).updateRecent(filteredRecipes[index]['id']);
+                    Write(uid: user.uid).updateRecent(filteredRecipes[index]['id']);
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => RecipeDetailsPage(
@@ -96,7 +100,7 @@ class _RecipeListState extends State<RecipeList> {
                           ingredients: [
                             Ingredient(
                                 name: 'pepper', measurement: '20 oz')
-                          ],
+                          ], selected: widget.userData!.savedRecipes.contains(filteredRecipes[index]['id'])? true : false,
                         ),
                       ),
                     );

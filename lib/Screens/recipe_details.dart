@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:meal/DataBase/Write_DB.dart';
+import 'package:meal/DataBase/write_db.dart';
+import 'package:meal/Models/user_data.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 
-import '../DataBase/Fetch_DB.dart';
+import '../DataBase/fetch_db.dart';
+import '../Models/user_id.dart';
 
 class RecipeDetailsPage extends StatefulWidget {
   final String imageURL;
   final String recipeID;
   final String foodName;
+  final bool selected;
   final List<Ingredient> ingredients;
 
   const RecipeDetailsPage({
     Key? key,
     required this.imageURL,
+    required this.selected,
     required this.recipeID,
     required this.foodName,
     required this.ingredients,
@@ -26,28 +30,12 @@ class RecipeDetailsPage extends StatefulWidget {
 class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   Color primaryColor = Colors.white;
   bool pressed = false;
-  bool isSaved = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  Future<void> checkIfSaved(String uid) async {
-    List savedRecipes = await Fetch(uid: uid).getSavedRecipeIds(false);
-    if (savedRecipes.contains(widget.recipeID)) {
-      setState(() {
-        isSaved = true;
-        pressed = true; // If it’s saved, the icon should show as filled.
-      });
-    }
-  }
 
 
   @override
   Widget build(BuildContext context) {
-    final value = Provider.of<String>(context);
-    checkIfSaved(value);
+    final user = Provider.of<UserID>(context);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -62,18 +50,17 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         ),
         actions: [
           IconButton(
-            onPressed: isSaved
+            onPressed: widget.selected || pressed == true
                 ? null // Disable the button if the recipe is already saved.
                 : () {
-              Write(uid: value).saveRecipe(widget.recipeID);
+              Write(uid: user.uid).saveRecipe(widget.recipeID);
               setState(() {
                 pressed = true;
-                isSaved = true; // Once pressed, mark it as saved.
               });
             },
             icon: Icon(
-              pressed ? Icons.favorite : Icons.favorite_border,
-              color: pressed ? Colors.red : Colors.grey,
+              pressed || widget.selected ? Icons.favorite : Icons.favorite_border,
+              color: pressed || widget.selected ? Colors.red : Colors.grey,
             ),
           )
         ],

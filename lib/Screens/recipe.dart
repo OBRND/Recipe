@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:meal/DataBase/Write_DB.dart';
-import 'package:meal/Screens/RecipeDetails.dart';
-import 'package:meal/Screens/RecipeList.dart';
+import 'package:meal/Models/user_id.dart';
+import 'package:meal/Screens/recipe_details.dart';
+import 'package:meal/Screens/recipe_list.dart';
 import 'package:provider/provider.dart';
-
-import '../DataBase/Fetch_DB.dart';
+import '../DataBase/fetch_db.dart';
+import '../Models/user_data.dart';
 
 class Recipes extends StatefulWidget {
   const Recipes({super.key});
@@ -16,7 +16,6 @@ class Recipes extends StatefulWidget {
 class _RecipesState extends State<Recipes> {
   @override
   Widget build(BuildContext context) {
-    final value = Provider.of<String>(context);
     return Scaffold(
         body: Column(
             children: [
@@ -34,9 +33,7 @@ class _RecipesState extends State<Recipes> {
                           labelColor: Colors.black,
                           unselectedLabelColor: Colors.black45,
                           indicatorColor: Color(0xD7DF1313),
-                          onTap: (i) {
-                            print(i);
-                          },
+                          onTap: (i) {},
                           tabs: const [
                             Tab(text: 'Recently Viewed'),
                             Tab(text: 'Saved Recipes'),
@@ -45,8 +42,8 @@ class _RecipesState extends State<Recipes> {
                         Expanded(
                           child: TabBarView(
                             children: [
-                              commonFuture(value, true),
-                              commonFuture(value, false)
+                              commonFuture(true, context),
+                              commonFuture(false, context)
                             ],
                           ),
                         ),
@@ -60,9 +57,13 @@ class _RecipesState extends State<Recipes> {
     );
   }
 
-  Widget commonFuture(String value, bool selector){
+  Widget commonFuture(bool selector, context){
+
+    final user = Provider.of<UserID>(context);
+    final userDataa = Provider.of<UserDataModel?>(context);
+
     return  FutureBuilder(
-      future: Fetch(uid: value).getSavedRecipes(selector), // Fetch saved recipes.
+      future: Fetch(uid: user.uid).getSavedRecipes(selector ? userDataa!.recentRecipes : userDataa!.savedRecipes), // Fetch saved recipes.
       builder: (context, snapshot) {
         // Show loading indicator while fetching data.
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -83,15 +84,18 @@ class _RecipesState extends State<Recipes> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => RecipeDetailsPage(
-                        recipeID: recipe['id'],
-                        imageURL:
-                        'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
-                        foodName: recipe['name'],
-                        ingredients: [
-                          Ingredient(
-                              name: 'pepper', measurement: '20 oz')
-                        ],
+                      builder: (BuildContext context) => Consumer<UserDataModel?>(
+                        builder: (context, user, child) {
+                          return RecipeDetailsPage(
+                            recipeID: recipe['id'],
+                            imageURL:
+                            'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
+                            foodName: recipe['name'],
+                            ingredients: [
+                              Ingredient(name: 'pepper', measurement: '20 oz')
+                            ], selected: userDataa.savedRecipes.contains(recipe['id']) ? true : false,
+                          );
+                        },
                       ),
                     ),
                   );
@@ -138,8 +142,10 @@ class _RecipesState extends State<Recipes> {
   }
 
   Widget Categories(context) {
-    final value = Provider.of<String>(context);
-    Fetch User = Fetch(uid: value);
+    final user = Provider.of<UserID>(context);
+    final Userdata = Provider.of<UserDataModel?>(context);
+
+    Fetch User = Fetch(uid: user.uid);
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 840),
       child: GridView.builder(
@@ -155,11 +161,11 @@ class _RecipesState extends State<Recipes> {
                   if (index == 4) {
                     List<Map<String, dynamic>> recipes = await User.getAllRecipes();
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => RecipeList(recipes: recipes)));
+                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata)));
                   } else {
                     List<Map<String, dynamic>> recipes = await User.getRecipesByType(index);
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => RecipeList(recipes: recipes)));
+                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata)));
                   }
                 },
                 child: Column(
