@@ -130,7 +130,7 @@ class Fetch{
       'cal' : cal};
   }
 
- Future getSavedRecipes(List Ids) async {
+  Future getSavedRecipes(List Ids) async {
 
    List recipeIds = Ids;
 
@@ -152,6 +152,86 @@ class Fetch{
 
    return recipes;
  }
+
+
+ Future<List<Map<String, List<Map<String, dynamic>>>>> getWeeklyMealPlan(List ageGroups) async {
+   DocumentSnapshot scheduleSnapshot = await FirebaseFirestore.instance
+       .collection('Schedule')
+       .doc('Public')
+       .get();
+
+   List<Map<String, List<Map<String, dynamic>>>> multiplePlan = [];
+   List<String> mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+   Map<String, List<Map<String, dynamic>>> weeklyMealPlan = {};
+   List<DocumentReference> allMealRefs = [];
+
+   for (String ageGroup in ageGroups) {
+     Map<String, dynamic> ageGroupData = scheduleSnapshot[ageGroup] ?? {};
+
+   // Collect all meal references
+   for (String mealType in mealTypes) {
+     List<dynamic> mealRefs = ageGroupData[mealType] ?? [];
+     allMealRefs.addAll(mealRefs.cast<DocumentReference>());
+   }
+
+   // Fetch all recipe details in one go
+   List<DocumentSnapshot> recipeSnapshots = await Future.wait(
+       allMealRefs.map((ref) => ref.get()));
+
+   // Create a map of recipe ID to data for easy lookup
+   Map<String, Map<String, dynamic>> recipeDataMap = {
+     for (var snapshot in recipeSnapshots)
+       if (snapshot.exists) snapshot.id: snapshot.data() as Map<String, dynamic>
+   };
+
+   // Ensure each day has breakfast, lunch, dinner, and snack
+     // Store separate indices for each meal type to ensure cycling through recipes in their order
+     Map<String, int> mealTypeIndices = {
+       'breakfast': 0,
+       'lunch': 0,
+       'dinner': 0,
+       'snack': 0,
+     };
+
+     for (int day = 1; day <= 7; day++) {
+       List<Map<String, dynamic>> dailyMeals = [];
+
+       for (String mealType in mealTypes) {
+         List<dynamic> mealRefs = ageGroupData[mealType] ?? [];
+         if (mealRefs.isEmpty) continue;
+
+         // Get the index for the current meal type and fetch the appropriate recipe reference
+         int currentIndex = mealTypeIndices[mealType]!;
+         DocumentReference recipeRef = mealRefs[currentIndex % mealRefs.length];
+         Map<String, dynamic>? recipeData = recipeDataMap[recipeRef.id];
+
+         // If recipe data exists, add it to the daily meals list and increment the index
+         if (recipeData != null) {
+           recipeData['mealType'] = mealType;
+           dailyMeals.add(recipeData);
+
+           // Update the index for the meal type to move to the next recipe in the next cycle
+           mealTypeIndices[mealType] = (currentIndex + 1) % mealRefs.length;
+         }
+       }
+
+       weeklyMealPlan['$day'] = dailyMeals;
+     }
+
+     multiplePlan.add(weeklyMealPlan);
+
+   }
+
+   return multiplePlan;
+ }
+
+
+
+
+
+
+
+
 
 
 
