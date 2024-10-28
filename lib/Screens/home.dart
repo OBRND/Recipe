@@ -17,6 +17,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String name = "";
   int selected = DateTime.now().weekday;
+  List<Color> children = [Colors.green.shade400, Colors.redAccent.shade400, Colors.orange.shade600, Colors.blueAccent.shade400, Colors.tealAccent.shade400];
+  int index = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +47,6 @@ class _MyHomePageState extends State<MyHomePage> {
               setState(() {
                 selected = selectedDate.weekday;
               });
-              print(selected);
-              var data = await Fetch(uid: user.uid).getWeeklyMealPlan(
-                  ['children', 'adults']);
-              print('-------------------------------');
-              print(data[0]);
             },
             headerProps: const EasyHeaderProps(
               monthPickerType: MonthPickerType.switcher,
@@ -88,12 +85,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget mealPlanWidget(BuildContext context) {
     final user = Provider.of<UserID>(context);
-    final userData = Provider.of<UserDataModel?>(context);
+    final userInfo = Provider.of<UserDataModel?>(context);
     Fetch fetch = Fetch(uid: user.uid);
+    List<String> ageGroups = [];
+
+    if (userInfo == null) {
+      // Show a loading indicator while waiting for the user data.
+      return Center(child: CircularProgressIndicator());
+    }
+
+    for(int i = 0 ; i < userInfo!.children.length; i++){
+      print('-------');
+      print(i);
+      ageGroups.add(userInfo.children[i]['ageGroups']);
+    }
 
     return SingleChildScrollView(
       child: FutureBuilder(
-        future: fetch.getWeeklyMealPlan(['adults']),
+        future: fetch.getWeeklyPlan(ageGroups),
         builder: (context, snapshot) {
           // Show loading indicator while fetching data
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -113,14 +122,16 @@ class _MyHomePageState extends State<MyHomePage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: mealTypes.map((mealType) {
+                index = 0;
                 // Extract all meals of the current type across all days and individuals
                 List<Widget> mealWidgets = [];
 
                 weeklyMealPlan.forEach((dayData) {
                   final mealsForDay = dayData["$selected"] as List<dynamic>;
-                  final mealsOfType = mealsForDay.where((meal) => meal['mealType'] == mealType.toLowerCase()).toList();
+                  final mealsOfType = mealsForDay.where((meal) => meal['mealType']  == mealType.toLowerCase()).toList();
 
                   mealsOfType.forEach((meal) {
+                    index ++;
                     mealWidgets.add(
                       InkWell(
                         onTap: () {
@@ -151,13 +162,20 @@ class _MyHomePageState extends State<MyHomePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
+                                  width: 8,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
+                                    color: children[index % 5],
+                                  ),
+                                ),
+                                Container(
                                   width: 100,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12.0),
+                                    borderRadius: BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12)),
                                     image: const DecorationImage(
                                       image: NetworkImage(
                                           'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066'),
-                                      fit: BoxFit.cover,
+                                      fit: BoxFit.fill,
                                     ),
                                   ),
                                 ),
@@ -222,7 +240,5 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-
-
 
 }

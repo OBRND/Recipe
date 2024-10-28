@@ -12,12 +12,12 @@ class Write{
     List<Map<String, dynamic>> childInfo = [
       {
         'name': 'Alice',
-        'age': 8,
+        'ageGroup': 'infant',
         'dietPreference' : 'glutten free'
       },
       {
         'name': 'Bill',
-        'age': 12,
+        'ageGroup': 'children',
         'dietPreference' : 'Non spicy'
       },
     ];

@@ -17,7 +17,7 @@ class UserDataModel {
       name: data['name'] ?? '',
       savedRecipes: List<String>.from(data['savedRecipes'] ?? []),
       recentRecipes: List<String>.from(data['recent'] ?? []),
-      children: List.from(data['children'] ?? []),
+      children: List.from(data['children'] ?? ['adults']),
     );
   }
 }

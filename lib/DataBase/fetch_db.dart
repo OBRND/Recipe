@@ -154,7 +154,7 @@ class Fetch{
  }
 
 
- Future<List<Map<String, List<Map<String, dynamic>>>>> getWeeklyMealPlan(List ageGroups) async {
+ Future<List<Map<String, List<Map<String, dynamic>>>>> getWeeklyPlan(List ageGroups) async {
    DocumentSnapshot scheduleSnapshot = await FirebaseFirestore.instance
        .collection('Schedule')
        .doc('Public')
@@ -162,11 +162,11 @@ class Fetch{
 
    List<Map<String, List<Map<String, dynamic>>>> multiplePlan = [];
    List<String> mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
-   Map<String, List<Map<String, dynamic>>> weeklyMealPlan = {};
    List<DocumentReference> allMealRefs = [];
 
    for (String ageGroup in ageGroups) {
      Map<String, dynamic> ageGroupData = scheduleSnapshot[ageGroup] ?? {};
+     Map<String, List<Map<String, dynamic>>> weeklyMealPlan = {};
 
    // Collect all meal references
    for (String mealType in mealTypes) {
@@ -197,6 +197,7 @@ class Fetch{
        List<Map<String, dynamic>> dailyMeals = [];
 
        for (String mealType in mealTypes) {
+
          List<dynamic> mealRefs = ageGroupData[mealType] ?? [];
          if (mealRefs.isEmpty) continue;
 
@@ -207,11 +208,14 @@ class Fetch{
 
          // If recipe data exists, add it to the daily meals list and increment the index
          if (recipeData != null) {
-           recipeData['mealType'] = mealType;
-           dailyMeals.add(recipeData);
+           // Create a copy of the recipe data to avoid modifying the original map.
+           Map<String, dynamic> recipeCopy = Map.from(recipeData);
+           recipeCopy['mealType'] = mealType;
+           recipeCopy['id'] = recipeRef.id;
+           dailyMeals.add(recipeCopy);
 
-           // Update the index for the meal type to move to the next recipe in the next cycle
-           mealTypeIndices[mealType] = (currentIndex + 1) % mealRefs.length;
+         // Update the index for the meal type to move to the next recipe in the next cycle
+           mealTypeIndices[mealType] = ((currentIndex) % mealRefs.length) + 1;
          }
        }
 
