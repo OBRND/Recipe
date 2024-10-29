@@ -4,6 +4,7 @@ import 'package:meal/Auth/auth_service.dart';
 import 'package:meal/DataBase/fetch_db.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:meal/Screens/recipe_details.dart';
+import 'package:meal/Screens/recipe_list.dart';
 import 'package:provider/provider.dart';
 import '../Models/user_id.dart';
 
@@ -22,14 +23,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final User = Provider.of<UserDataModel?>(context);
+    final UserInfo = Provider.of<UserDataModel?>(context);
     final user = Provider.of<UserID>(context);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(169, 126, 3, 3),
         title: Text(
-            User == null ? "Welcome back " : "Welcome back " + User.name,
+            UserInfo == null ? "Welcome back " : "Welcome back " + UserInfo.name,
             style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(onPressed: () {
@@ -94,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return Center(child: CircularProgressIndicator());
     }
 
-    for(int i = 0 ; i < userInfo!.children.length; i++){
+    for(int i = 0 ; i < userInfo.children.length; i++){
       print('-------');
       print(i);
       ageGroups.add(userInfo.children[i]['ageGroups']);
@@ -111,12 +112,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
           // Check if there's an error
           if (snapshot.hasError) {
-            return const Center(child: Text('Error loading meal plan.'));
+            return const Center(child: Text('Error loading meal plan.'));//make an alert dialogue box of this error  loading text
           }
 
           // Check if data is available
           if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            final weeklyMealPlan = snapshot.data!;
+            final weeklyPlan = snapshot.data!;
             List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
 
             return Column(
@@ -126,87 +127,117 @@ class _MyHomePageState extends State<MyHomePage> {
                 // Extract all meals of the current type across all days and individuals
                 List<Widget> mealWidgets = [];
 
-                weeklyMealPlan.forEach((dayData) {
+                weeklyPlan.forEach((dayData) {
                   final mealsForDay = dayData["$selected"] as List<dynamic>;
                   final mealsOfType = mealsForDay.where((meal) => meal['mealType']  == mealType.toLowerCase()).toList();
 
                   mealsOfType.forEach((meal) {
                     index ++;
                     mealWidgets.add(
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (BuildContext context) => Consumer<UserDataModel?>(
-                                builder: (context, userData, child) {
-                                  return RecipeDetailsPage(
-                                    recipeID: meal['id'],
-                                    imageURL:
-                                    'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
-                                    foodName: meal['name'],
-                                    ingredients: [
-                                      Ingredient(name: 'pepper', measurement: '20 oz')
-                                    ],
-                                    selected: userData?.savedRecipes.contains(meal['id']) ?? false,
-                                  );
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          height: 100,
-                          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                          child: Card(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 8,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
-                                    color: children[index % 5],
-                                  ),
-                                ),
-                                Container(
-                                  width: 100,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12)),
-                                    image: const DecorationImage(
-                                      image: NetworkImage(
-                                          'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066'),
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        meal['name'],
-                                        style: const TextStyle(
-                                          color: Colors.black54,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4.0),
-                                      Text(
-                                        'Type: ${meal['mealType']}',
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 12.0,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                        Dismissible(
+                          key: UniqueKey(), // Each Dismissible widget needs a unique key
+                          direction: DismissDirection.endToStart, // Specify swipe direction
+                          onDismissed: (direction) {
+                            print('---------');
+                            print(weeklyPlan);
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (BuildContext context) => RecipeList(recipes: weeklyPlan, userData: userInfo, swap: true,
+                                  index: mealType == 'breakfast' ? 0 :
+                                  mealType == 'lunch' || mealType == 'dinner' ? 1 :
+                                  3, meal: meal,
+                                  )),
+                            );
+                          },
+                          background: Container(
+                            color: Colors.blue, // Background color when swiped
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            alignment: Alignment.centerRight,
+                            child: const Icon(
+                              Icons.swap_horiz,
+                              color: Colors.white,
+                              size: 32,
                             ),
                           ),
-                        ),
-                      ),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (BuildContext context) => Consumer<UserDataModel?>(
+                                    builder: (context, userData, child) {
+                                      return RecipeDetailsPage(
+                                        recipeID: meal['id'],
+                                        imageURL:
+                                        'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
+                                        foodName: meal['name'],
+                                        ingredients: [
+                                          Ingredient(name: 'pepper', measurement: '20 oz')
+                                        ],
+                                        selected: userData?.savedRecipes.contains(meal['id']) ?? false,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              height: 100,
+                              margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                              child: Card(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: 8,
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(12),
+                                            bottomLeft: Radius.circular(12)),
+                                        color: children[index % 5],
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 100,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                            topRight: Radius.circular(12),
+                                            bottomRight: Radius.circular(12)),
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                              'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066'),
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            meal['name'],
+                                            style: const TextStyle(
+                                              color: Colors.black54,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4.0),
+                                          Text(
+                                            'Type: ${meal['mealType']}',
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 12.0,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
                     );
                   });
                 });

@@ -7,6 +7,7 @@ class Write{
   Write({required this.uid});
 
   final CollectionReference user = FirebaseFirestore.instance.collection('Users');
+  final CollectionReference Schedule = FirebaseFirestore.instance.collection('Schedule');
 
   Future addUser(String firstname, String email) async{
     List<Map<String, dynamic>> childInfo = [
@@ -42,6 +43,13 @@ class Write{
     return await user.doc(uid).update({
       "recent" : FieldValue.arrayUnion([id])
     });
+  }
+
+  Future swapMeal(weeklyPlan) async{
+
+    // return Schedule.doc(uid).set({
+    // 'weeklyPlan' :)
+    // });
   }
 
 }

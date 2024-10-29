@@ -88,12 +88,12 @@ class _RecipesState extends State<Recipes> {
                         builder: (context, user, child) {
                           return RecipeDetailsPage(
                             recipeID: recipe['id'],
-                            imageURL:
-                            'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
+                            imageURL: 'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
                             foodName: recipe['name'],
                             ingredients: [
                               Ingredient(name: 'pepper', measurement: '20 oz')
-                            ], selected: userDataa.savedRecipes.contains(recipe['id']) ? true : false,
+                            ],
+                            selected: userDataa.savedRecipes.contains(recipe['id']) ? true : false,
                           );
                         },
                       ),
@@ -161,11 +161,11 @@ class _RecipesState extends State<Recipes> {
                   if (index == 4) {
                     List<Map<String, dynamic>> recipes = await User.getAllRecipes();
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata)));
+                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata, swap: false, index: null, meal: {},)));
                   } else {
                     List<Map<String, dynamic>> recipes = await User.getRecipesByType(index);
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata)));
+                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata, swap: false, index: null, meal: {},)));
                   }
                 },
                 child: Column(

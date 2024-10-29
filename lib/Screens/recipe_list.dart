@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal/DataBase/fetch_db.dart';
 import 'package:meal/Models/user_id.dart';
 import 'package:provider/provider.dart';
 import '../DataBase/write_db.dart';
@@ -6,10 +7,13 @@ import '../Models/user_data.dart';
 import 'recipe_details.dart';
 
 class RecipeList extends StatefulWidget {
-  final List<Map<String, dynamic>> recipes;
+  List<Map<String, dynamic>> recipes;
   final UserDataModel? userData;
+  final bool swap;
+  int? index = null;
+  Map meal = {};
 
-  const RecipeList({required this.recipes, required this.userData});
+  RecipeList({required this.recipes,required this.swap, required this.userData, required this.index, required this.meal});
 
   @override
   _RecipeListState createState() => _RecipeListState();
@@ -19,11 +23,31 @@ class _RecipeListState extends State<RecipeList> {
   String searchQuery = '';
   String selectedFilter = 'All';
   List<String> filterOptions = ['All', 'Age Group', 'Gluten-Free', 'Vegan'];
+  bool isLoading = true;
+  int recipesIndex = 0;
+  List weeklyPlan = [];
+
+
+
+  Future<void> _fetchRecipes(uid, index) async {
+
+    List<Map<String, dynamic>> fetched = await Fetch(uid: uid).getRecipesByType(index);
+
+    setState(() {
+      weeklyPlan = widget.recipes;
+      widget.recipes = fetched;
+      isLoading = false;
+      recipesIndex = widget.index!;
+      widget.index  = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserID>(context);
-
+    if (widget.swap && widget.index != null) {
+      _fetchRecipes(user.uid, widget.index);
+    }
     List<Map<String, dynamic>> filteredRecipes = widget.recipes
         .where((recipe) =>
     recipe['name'].toLowerCase().contains(searchQuery.toLowerCase()) &&
@@ -51,7 +75,7 @@ class _RecipeListState extends State<RecipeList> {
               searchQuery = value;
             });
           },
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: 'Search recipes...',
             border: InputBorder.none,
             hintStyle: TextStyle(color: Colors.black54),
@@ -79,7 +103,9 @@ class _RecipeListState extends State<RecipeList> {
           ),
         ],
       ),
-      body: Card(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Card(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -87,56 +113,74 @@ class _RecipeListState extends State<RecipeList> {
               child: ListView.builder(
                 shrinkWrap: true,
                 itemCount: filteredRecipes.length,
-                itemBuilder: (context, index) => InkWell(
-                  onTap: () {
-                    Write(uid: user.uid).updateRecent(filteredRecipes[index]['id']);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => RecipeDetailsPage(
-                          recipeID: filteredRecipes[index]['id'],
-                          imageURL:
-                          'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
-                          foodName: filteredRecipes[index]['name'],
-                          ingredients: [
-                            Ingredient(
-                                name: 'pepper', measurement: '20 oz')
-                          ], selected: widget.userData!.savedRecipes.contains(filteredRecipes[index]['id'])? true : false,
+                itemBuilder: (context, index) =>
+                    InkWell(
+                      onTap: () {
+                        Write(uid: user.uid).updateRecent(
+                            filteredRecipes[index]['id']);
+                        widget.swap == true ? _showSwapDialog(
+                          context,
+                              filteredRecipes,
+                              index,
+                              () {
+                            Navigator.pop(context);
+                            print(weeklyPlan);
+                            print(widget.meal);
+                            // Fetch(uid: user.uid).// Logic to swap the selected meal goes here
+                          },
+                        ) :
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                RecipeDetailsPage(
+                                  recipeID: filteredRecipes[index]['id'],
+                                  imageURL:
+                                  'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
+                                  foodName: filteredRecipes[index]['name'],
+                                  ingredients: [
+                                    Ingredient(
+                                        name: 'pepper', measurement: '20 oz')
+                                  ],
+                                  selected: widget.userData!.savedRecipes
+                                      .contains(filteredRecipes[index]['id'])
+                                      ? true
+                                      : false,
+                                ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: 100,
+                        child: Card(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 100,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  image: const DecorationImage(
+                                    image: NetworkImage(
+                                        'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066'),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  filteredRecipes[index]['name'],
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    );
-                  },
-                  child: Container(
-                    height: 100,
-                    child: Card(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 100,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12.0),
-                              image: const DecorationImage(
-                                image: NetworkImage(
-                                    'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066'),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              filteredRecipes[index]['name'],
-                              style: const TextStyle(
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                  ),
-                ),
               ),
             ),
           ],
@@ -144,4 +188,45 @@ class _RecipeListState extends State<RecipeList> {
       ),
     );
   }
+  void _showSwapDialog(BuildContext context, filteredRecipes, int index, Function onConfirm) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Swap'),
+          content: RecipeDetailsPage(
+            recipeID: filteredRecipes[index]['id'],
+            imageURL:
+            'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
+            foodName: filteredRecipes[index]['name'],
+            ingredients: [
+              Ingredient(
+                  name: 'pepper', measurement: '20 oz')
+            ],
+            selected: widget.userData!.savedRecipes
+                .contains(filteredRecipes[index]['id'])
+                ? true
+                : false,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                onConfirm(); // Call the confirm function to handle swap logic
+                Navigator.of(context).pop();
+              },
+              child: Text('Confirm change'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 }
+
