@@ -161,11 +161,11 @@ class _RecipesState extends State<Recipes> {
                   if (index == 4) {
                     List<Map<String, dynamic>> recipes = await User.getAllRecipes();
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata, swap: false, index: null, meal: {},)));
+                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata, swap: false, index: null, meal: {}, day: null, child: null,)));
                   } else {
                     List<Map<String, dynamic>> recipes = await User.getRecipesByType(index);
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata, swap: false, index: null, meal: {},)));
+                        builder: (context) => RecipeList(recipes: recipes, userData: Userdata, swap: false, index: null, meal: {}, day: null, child: null,)));
                   }
                 },
                 child: Column(

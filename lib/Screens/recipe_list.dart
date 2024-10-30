@@ -11,9 +11,11 @@ class RecipeList extends StatefulWidget {
   final UserDataModel? userData;
   final bool swap;
   int? index = null;
+  int? day = null;
+  int? child = null;
   Map meal = {};
 
-  RecipeList({required this.recipes,required this.swap, required this.userData, required this.index, required this.meal});
+  RecipeList({required this.recipes,required this.swap, required this.userData, required this.index, required this.meal, required this.day, required this.child});
 
   @override
   _RecipeListState createState() => _RecipeListState();
@@ -25,7 +27,7 @@ class _RecipeListState extends State<RecipeList> {
   List<String> filterOptions = ['All', 'Age Group', 'Gluten-Free', 'Vegan'];
   bool isLoading = true;
   int recipesIndex = 0;
-  List weeklyPlan = [];
+  List<Map<String, dynamic>> weeklyPlan = [];
 
 
 
@@ -118,17 +120,15 @@ class _RecipeListState extends State<RecipeList> {
                       onTap: () {
                         Write(uid: user.uid).updateRecent(
                             filteredRecipes[index]['id']);
+                        print(filteredRecipes[index]);
                         widget.swap == true ? _showSwapDialog(
                           context,
                               filteredRecipes,
                               index,
                               () {
                             Navigator.pop(context);
-                            print(weeklyPlan);
-                            print(widget.meal);
-                            // Fetch(uid: user.uid).// Logic to swap the selected meal goes here
-                          },
-                        ) :
+                            Write(uid: user.uid).createCustomMealPlanWithSwap(weeklyPlan, filteredRecipes[index]['id'], recipesIndex, widget.day!, widget.child!);
+                        }) :
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) =>

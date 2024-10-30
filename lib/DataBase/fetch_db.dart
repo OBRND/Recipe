@@ -154,37 +154,38 @@ class Fetch{
  }
 
 
- Future<List<Map<String, List<Map<String, dynamic>>>>> getWeeklyPlan(List ageGroups) async {
-   DocumentSnapshot scheduleSnapshot = await FirebaseFirestore.instance
-       .collection('Schedule')
-       .doc('Public')
-       .get();
+ Future<List<Map<String, List<Map<String, dynamic>>>>> getWeeklyPlan(List ageGroups, bool custom) async {
+
+    DocumentSnapshot publicScheduleSnapshot = await Schedule.doc('Public').get();
+    DocumentSnapshot customScheduleSnapshot = await Schedule.doc(uid).get();
 
    List<Map<String, List<Map<String, dynamic>>>> multiplePlan = [];
    List<String> mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
    List<DocumentReference> allMealRefs = [];
 
    for (String ageGroup in ageGroups) {
-     Map<String, dynamic> ageGroupData = scheduleSnapshot[ageGroup] ?? {};
+     Map<String, dynamic> ageGroupData = custom ? customScheduleSnapshot[ageGroup] : publicScheduleSnapshot[ageGroup] ?? {};
      Map<String, List<Map<String, dynamic>>> weeklyMealPlan = {};
 
-   // Collect all meal references
-   for (String mealType in mealTypes) {
-     List<dynamic> mealRefs = ageGroupData[mealType] ?? [];
-     allMealRefs.addAll(mealRefs.cast<DocumentReference>());
-   }
+     // Collect all meal references
+     for (String mealType in mealTypes) {
+       List<dynamic> mealRefs = ageGroupData[mealType] ?? [];
+       allMealRefs.addAll(mealRefs.cast<DocumentReference>());
+     }
 
-   // Fetch all recipe details in one go
-   List<DocumentSnapshot> recipeSnapshots = await Future.wait(
-       allMealRefs.map((ref) => ref.get()));
+     // Fetch all recipe details in one go
+     List<DocumentSnapshot> recipeSnapshots = await Future.wait(
+         allMealRefs.map((ref) => ref.get()));
 
-   // Create a map of recipe ID to data for easy lookup
-   Map<String, Map<String, dynamic>> recipeDataMap = {
-     for (var snapshot in recipeSnapshots)
-       if (snapshot.exists) snapshot.id: snapshot.data() as Map<String, dynamic>
-   };
+     // Create a map of recipe ID to data for easy lookup
+     Map<String, Map<String, dynamic>> recipeDataMap = {
+       for (var snapshot in recipeSnapshots)
+         if (snapshot.exists) snapshot.id: snapshot.data() as Map<
+             String,
+             dynamic>
+     };
 
-   // Ensure each day has breakfast, lunch, dinner, and snack
+     // Ensure each day has breakfast, lunch, dinner, and snack
      // Store separate indices for each meal type to ensure cycling through recipes in their order
      Map<String, int> mealTypeIndices = {
        'breakfast': 0,
@@ -197,7 +198,6 @@ class Fetch{
        List<Map<String, dynamic>> dailyMeals = [];
 
        for (String mealType in mealTypes) {
-
          List<dynamic> mealRefs = ageGroupData[mealType] ?? [];
          if (mealRefs.isEmpty) continue;
 
@@ -214,7 +214,7 @@ class Fetch{
            recipeCopy['id'] = recipeRef.id;
            dailyMeals.add(recipeCopy);
 
-         // Update the index for the meal type to move to the next recipe in the next cycle
+           // Update the index for the meal type to move to the next recipe in the next cycle
            mealTypeIndices[mealType] = ((currentIndex) % mealRefs.length) + 1;
          }
        }
@@ -223,7 +223,6 @@ class Fetch{
      }
 
      multiplePlan.add(weeklyMealPlan);
-
    }
 
    return multiplePlan;

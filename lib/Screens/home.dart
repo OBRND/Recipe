@@ -103,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return SingleChildScrollView(
       child: FutureBuilder(
-        future: fetch.getWeeklyPlan(ageGroups),
+        future: fetch.getWeeklyPlan(['0','1'], userInfo.custom),
         builder: (context, snapshot) {
           // Show loading indicator while fetching data
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -139,13 +139,18 @@ class _MyHomePageState extends State<MyHomePage> {
                           direction: DismissDirection.endToStart, // Specify swipe direction
                           onDismissed: (direction) {
                             print('---------');
-                            print(weeklyPlan);
+                            print(weeklyPlan.indexOf(dayData));
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (BuildContext context) => RecipeList(recipes: weeklyPlan, userData: userInfo, swap: true,
+                                builder: (BuildContext context) => RecipeList(
+                                  recipes: weeklyPlan,
+                                  userData: userInfo, swap: true,
                                   index: mealType == 'breakfast' ? 0 :
-                                  mealType == 'lunch' || mealType == 'dinner' ? 1 :
-                                  3, meal: meal,
+                                  mealType == 'lunch' ? 2 :
+                                  mealType == 'dinner' ? 1 : 3,
+                                  meal: meal,
+                                  day: selected,
+                                  child: weeklyPlan.indexOf(dayData),
                                   )),
                             );
                           },
