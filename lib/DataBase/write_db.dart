@@ -72,13 +72,6 @@ class Write{
       };
       for (var dayMeals in children.values) {
         for (var meal in dayMeals) {
-          print('============');
-          print(meal);
-          print('============');
-          print('============');
-          print("Plan 1:" + "${weeklyPlan[0]}");
-          print("Plan 2:" + "${weeklyPlan[1]}");
-          print('============');
 
           String type = meal['mealType'];
           String mealId = meal['id'];
@@ -98,12 +91,15 @@ class Write{
 
     // Ensure the custom meal plan is within bounds and replace the specific meal
     if (childrenPlan['$child'][mealType] != null && childrenPlan['$child'][mealType]!.length > dayIndex) {
-      childrenPlan['$child'][mealType]![dayIndex] = newRecipeRef;
+      childrenPlan['$child'][mealType]![dayIndex - 1] = newRecipeRef;
     }
 
     // Save the customized meal plan to Firestore under the user's UID
     await userScheduleRef.set(childrenPlan);
     print('Custom meal plan created with swap.');
+    await user.doc(uid).update({
+      'swapped': FieldValue.increment(1)
+    });
   }
 
 

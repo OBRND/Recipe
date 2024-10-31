@@ -103,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return SingleChildScrollView(
       child: FutureBuilder(
-        future: fetch.getWeeklyPlan(['0','1'], userInfo.custom),
+        future: fetch.getWeeklyPlan(['0'], userInfo.custom),
         builder: (context, snapshot) {
           // Show loading indicator while fetching data
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -146,8 +146,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   recipes: weeklyPlan,
                                   userData: userInfo, swap: true,
                                   index: mealType == 'breakfast' ? 0 :
-                                  mealType == 'lunch' ? 2 :
-                                  mealType == 'dinner' ? 1 : 3,
+                                  mealType == 'lunch' ? 1 :
+                                  mealType == 'dinner' ? 2 : 3,
                                   meal: meal,
                                   day: selected,
                                   child: weeklyPlan.indexOf(dayData),
