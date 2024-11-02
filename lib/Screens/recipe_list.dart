@@ -14,8 +14,9 @@ class RecipeList extends StatefulWidget {
   int? day = null;
   int? child = null;
   Map meal = {};
+  List? name = [];
 
-  RecipeList({required this.recipes,required this.swap, required this.userData, required this.index, required this.meal, required this.day, required this.child});
+  RecipeList({required this.recipes,required this.swap, required this.userData, required this.index, required this.meal, required this.day, required this.child, required this.name});
 
   @override
   _RecipeListState createState() => _RecipeListState();
@@ -127,7 +128,7 @@ class _RecipeListState extends State<RecipeList> {
                               index,
                               () {
                             Navigator.pop(context);
-                            Write(uid: user.uid).createCustomMealPlanWithSwap(weeklyPlan, filteredRecipes[index]['id'], recipesIndex, widget.day!, widget.child!);
+                            Write(uid: user.uid).createCustomMealPlanWithSwap(weeklyPlan, filteredRecipes[index]['id'], recipesIndex, widget.day!, widget.child!, widget.userData!.children);
                         }) :
                         Navigator.of(context).push(
                           MaterialPageRoute(

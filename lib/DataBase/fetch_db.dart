@@ -228,14 +228,4 @@ class Fetch{
    return multiplePlan;
  }
 
-
-
-
-
-
-
-
-
-
-
 }

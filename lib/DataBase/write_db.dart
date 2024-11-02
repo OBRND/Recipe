@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:meal/DataBase/fetch_db.dart';
 
 class Write{
 
@@ -49,19 +48,24 @@ class Write{
   Future<void> createCustomMealPlanWithSwap(
       List<Map<String, dynamic>> weeklyPlan,
       String newMealId,
-      int mealIndex, // e.g., 0 for breakfast, 1 for lunch, etc.
-      int dayIndex,   // e.g., 0 for Monday, 1 for Tuesday, etc.
-      int child
+      int mealIndex,
+      int dayIndex,
+      int child,
+      List children,
       ) async {
+
+    List childName = [];
     final userScheduleRef = Schedule.doc(uid);
 
-    // Initialize a custom meal plan structured like the weekly plan
+    for(var childval in children){
+      childName.add(childval['name']);
+    }
 
+    // Initialize a custom meal plan structured like the weekly plan
     Map<String, dynamic> childrenPlan = {};
     Map<String, List<DocumentReference>> customMealPlan;
-
     List<String> mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
-
+    int index = 0;
     // Clone the weekly meal plan into the custom plan with reference format
     for (var children in weeklyPlan) {
       customMealPlan = {
@@ -82,7 +86,8 @@ class Write{
           }
         }
       }
-      childrenPlan['${weeklyPlan.indexOf(children)}'] = customMealPlan;
+      childrenPlan[childName[index]] = customMealPlan;
+      index ++;
     }
 
     // Swap the selected meal with the new meal ID on the specified day and meal type
@@ -90,18 +95,17 @@ class Write{
     String mealType = mealTypes[mealIndex];
 
     // Ensure the custom meal plan is within bounds and replace the specific meal
-    if (childrenPlan['$child'][mealType] != null && childrenPlan['$child'][mealType]!.length > dayIndex) {
-      childrenPlan['$child'][mealType]![dayIndex - 1] = newRecipeRef;
+    if (childrenPlan[childName[child]][mealType] != null && childrenPlan[childName[child]][mealType]!.length > dayIndex) {
+      childrenPlan[childName[child]][mealType]![dayIndex - 1] = newRecipeRef;
     }
 
     // Save the customized meal plan to Firestore under the user's UID
     await userScheduleRef.set(childrenPlan);
     print('Custom meal plan created with swap.');
     await user.doc(uid).update({
-      'swapped': FieldValue.increment(1)
+      'swapped': FieldValue.increment(1),
+      'custom' : true
     });
   }
-
-
 
 }

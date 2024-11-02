@@ -95,15 +95,14 @@ class _MyHomePageState extends State<MyHomePage> {
       return Center(child: CircularProgressIndicator());
     }
 
-    for(int i = 0 ; i < userInfo.children.length; i++){
-      print('-------');
-      print(i);
+    for(int i = 0 ; i < userInfo.children.length; i++) {
+      userInfo.custom ? ageGroups.add(userInfo.children[i]['name']) :
       ageGroups.add(userInfo.children[i]['ageGroups']);
     }
 
     return SingleChildScrollView(
       child: FutureBuilder(
-        future: fetch.getWeeklyPlan(['0'], userInfo.custom),
+        future: fetch.getWeeklyPlan(ageGroups, userInfo.custom),
         builder: (context, snapshot) {
           // Show loading indicator while fetching data
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -119,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (snapshot.hasData && snapshot.data!.isNotEmpty) {
             final weeklyPlan = snapshot.data!;
             List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
-
+            print(snapshot.data);
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: mealTypes.map((mealType) {
@@ -151,6 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   meal: meal,
                                   day: selected,
                                   child: weeklyPlan.indexOf(dayData),
+                                  name: ageGroups
                                   )),
                             );
                           },

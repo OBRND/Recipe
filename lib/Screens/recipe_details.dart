@@ -65,7 +65,8 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
           )
         ],
       ),
-      body: Column(
+      body:
+      Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
