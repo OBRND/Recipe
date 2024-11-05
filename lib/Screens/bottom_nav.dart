@@ -65,6 +65,6 @@ class _bottomNavState extends State<bottomNav> {
 
 List<Widget> _listOfWidget = <Widget>[
   const Meals(),
-  MyHomePage(),
+  const MyHomePage(),
   const Recipes(),
 ];

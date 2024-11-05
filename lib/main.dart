@@ -6,10 +6,15 @@ import 'package:meal/Screens/Wrapper.dart';
 import 'package:meal/Screens/bottom_nav.dart';
 import 'package:provider/provider.dart';
 
+import 'Theme/themeNotifier.dart';
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(ChangeNotifierProvider<ThemeNotifier>(
+    create: (_) => ThemeNotifier(ThemeData.light()),
+    child: MyApp(),
+  ),);
 }
 
 class MyApp extends StatefulWidget {

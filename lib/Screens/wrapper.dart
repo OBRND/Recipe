@@ -12,21 +12,21 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserID?>(context); // Fetches the authenticated user
+    final user = Provider.of<UserID?>(
+        context); // Fetches the authenticated user
 
     if (user == null) {
       return SignIn(); // Replace with your login screen widget
     }
 
     return StreamProvider<UserDataModel?>.value(
-      lazy: false,
-      value: userStream(user.uid),
-      initialData: null,
-      catchError: (_, __) => null,
-    builder: (context, child) {
-    // No longer throws
-    return bottomNav();
-      });
+        lazy: false,
+        value: userStream(user.uid),
+        initialData: null,
+        catchError: (_, __) => null,
+        builder: (context, child) {
+          return bottomNav();
+        });
   }
 
 

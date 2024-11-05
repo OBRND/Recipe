@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meal/DataBase/fetch_db.dart';
 
 class Write{
 
@@ -106,6 +107,47 @@ class Write{
       'swapped': FieldValue.increment(1),
       'custom' : true
     });
+  }
+
+  Future<void> addChild(Map childInfo, children) async {
+    children.add(childInfo);
+
+    await updateSchedule(childInfo['ageGroups'], childInfo['name']);
+    // Update Firestore with the new list of children
+    await user.doc(uid).update({'children': children});
+
+  }
+
+  Future updateSchedule(String ageGroup, String name) async{
+
+    Map<String, dynamic> childPlan = {};
+    Map<String, List<DocumentReference>> customMealPlan;
+    customMealPlan = {
+      'breakfast': [],
+      'lunch': [],
+      'dinner': [],
+      'snack': [],
+    };
+
+    List weeklyPlan = await Fetch(uid: uid).getWeeklyPlan([ageGroup], false);
+    print(weeklyPlan);
+    for (var dayMeals in weeklyPlan) {
+      for (var day in dayMeals.values) {
+      for (var meal in day) {
+
+        String type = meal['mealType'];
+        String mealId = meal['id'];
+        var recipeRef = FirebaseFirestore.instance.doc('/Recipes/$mealId');
+
+        if (customMealPlan[type] != null) {
+          customMealPlan[type]!.add(recipeRef);
+        }
+      }
+      }
+    }
+    childPlan[name] = customMealPlan;
+
+    return await Schedule.doc(uid).update({name : customMealPlan});
   }
 
 }

@@ -155,16 +155,17 @@ class Fetch{
 
 
  Future<List<Map<String, List<Map<String, dynamic>>>>> getWeeklyPlan(List ageGroups, bool custom) async {
-
-    DocumentSnapshot publicScheduleSnapshot = await Schedule.doc('Public').get();
-    DocumentSnapshot customScheduleSnapshot = await Schedule.doc(uid).get();
+   DocumentSnapshot publicScheduleSnapshot = await Schedule.doc('Public').get();
+   DocumentSnapshot customScheduleSnapshot = await Schedule.doc(uid).get();
 
    List<Map<String, List<Map<String, dynamic>>>> multiplePlan = [];
    List<String> mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
    List<DocumentReference> allMealRefs = [];
 
    for (String ageGroup in ageGroups) {
-     Map<String, dynamic> ageGroupData = custom ? customScheduleSnapshot[ageGroup] : publicScheduleSnapshot[ageGroup] ?? {};
+     Map<String, dynamic> ageGroupData = custom
+         ? customScheduleSnapshot[ageGroup]
+         : publicScheduleSnapshot[ageGroup] ?? {};
      Map<String, List<Map<String, dynamic>>> weeklyMealPlan = {};
 
      // Collect all meal references

@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:meal/Auth/auth_service.dart';
 import 'package:meal/DataBase/fetch_db.dart';
 import 'package:meal/Models/user_data.dart';
+import 'package:meal/Screens/profile.dart';
 import 'package:meal/Screens/recipe_details.dart';
 import 'package:meal/Screens/recipe_list.dart';
 import 'package:provider/provider.dart';
 import '../Models/user_id.dart';
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -35,7 +38,17 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           IconButton(onPressed: () {
             AuthService().sign_out();
-          }, icon: Icon(Icons.logout, color: Colors.white))
+          }, icon: Icon(Icons.logout, color: Colors.white)),
+          IconButton(onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (BuildContext context) => Consumer<UserDataModel?>(
+                    builder: (BuildContext context, UserDataModel? value, Widget? child) {
+                       return Profile(info: UserInfo!.children,);
+                      },
+                      )),
+            );
+          }, icon: Icon(Icons.person, color: Colors.white))
         ],
       ),
       body: Column(
