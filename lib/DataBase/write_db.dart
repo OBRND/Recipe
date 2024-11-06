@@ -109,45 +109,87 @@ class Write{
     });
   }
 
-  Future<void> addChild(Map childInfo, children) async {
-    children.add(childInfo);
+  Future<void> addOrUpdateChild(Map<String, dynamic> childInfo, List<dynamic> children, {bool isEditing = false, Map<String, dynamic>? existingChild}) async {
+    String childName = childInfo['name'];
+    String childAgeGroup = childInfo['ageGroups'];
+    bool updateMealPlan = false;
 
-    await updateSchedule(childInfo['ageGroups'], childInfo['name']);
-    // Update Firestore with the new list of children
+    // If editing, locate the existing child and update accordingly
+    if (isEditing && existingChild != null) {
+      String originalName = existingChild['name'];
+      String originalAgeGroup = existingChild['ageGroups'];
+
+      // Check if the age group has changed, requiring a meal plan update
+      if (childAgeGroup != originalAgeGroup) {
+        // Locate the index of the child to update in the list
+        int childIndex = children.indexWhere((child) => child['name'] == originalName);
+        print('childIndex:');
+        print(childIndex);
+
+        if (childIndex != -1) {
+          // Remove the child from the local list
+          children.removeAt(childIndex);
+          // Re-add with updated info
+          children.insert(childIndex, childInfo);
+
+          // Update Firestore with the modified list
+          await user.doc(uid).update({'children': children});
+
+          updateMealPlan = true;
+        }
+      }
+
+      // Update existing child’s info in children list
+      int childIndex = children.indexWhere((child) => child['name'] == originalName);
+      if (childIndex != -1) {
+        children[childIndex] = childInfo;
+      }
+
+      // If the name has changed, remove the old meal plan under the old name
+      if (originalName != childName) {
+        await Schedule.doc(uid).update({originalName: FieldValue.delete()});
+      }
+    } else {
+      // If adding a new child
+      children.add(childInfo);
+      updateMealPlan = true;
+    }
+
+    // Update meal plan if required
+    if (updateMealPlan) {
+      await updateSchedule(childAgeGroup, childName);
+    }
+
+    // Update Firestore with the updated children list
     await user.doc(uid).update({'children': children});
-
   }
 
-  Future updateSchedule(String ageGroup, String name) async{
-
-    Map<String, dynamic> childPlan = {};
-    Map<String, List<DocumentReference>> customMealPlan;
-    customMealPlan = {
+  Future updateSchedule(String ageGroup, String name) async {
+    Map<String, List<DocumentReference>> customMealPlan = {
       'breakfast': [],
       'lunch': [],
       'dinner': [],
       'snack': [],
     };
 
+    // Fetch the weekly plan for the specified age group
     List weeklyPlan = await Fetch(uid: uid).getWeeklyPlan([ageGroup], false);
-    print(weeklyPlan);
+
+    // Populate customMealPlan from weeklyPlan
     for (var dayMeals in weeklyPlan) {
       for (var day in dayMeals.values) {
-      for (var meal in day) {
-
-        String type = meal['mealType'];
-        String mealId = meal['id'];
-        var recipeRef = FirebaseFirestore.instance.doc('/Recipes/$mealId');
-
-        if (customMealPlan[type] != null) {
-          customMealPlan[type]!.add(recipeRef);
+        for (var meal in day) {
+          String type = meal['mealType'];
+          String mealId = meal['id'];
+          var recipeRef = FirebaseFirestore.instance.doc('/Recipes/$mealId');
+          customMealPlan[type]?.add(recipeRef);
         }
       }
-      }
     }
-    childPlan[name] = customMealPlan;
 
-    return await Schedule.doc(uid).update({name : customMealPlan});
+    // Update the child’s custom meal plan in Firestore
+    return await Schedule.doc(uid).update({name: customMealPlan});
   }
+
 
 }

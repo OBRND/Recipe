@@ -79,8 +79,9 @@ class _ProfileState extends State<Profile> {
   Future<void> _showChildDialog(BuildContext context,
       {Map<String, dynamic>? childData, int? index}) async {
     final nameController = TextEditingController(text: childData?['name']);
-    final ageController = TextEditingController(text: childData?['age']);
+    final ageController = TextEditingController(text: childData?['age'].toString());
     final user = Provider.of<UserID>(context, listen: false);
+    int index = 0;
 
     await showDialog(
       context: context,
@@ -110,22 +111,24 @@ class _ProfileState extends State<Profile> {
               onPressed: () async{
                 print(widget.info);
                 if (childData == null) {
-                  await Write(uid: user.uid).addChild({
+                  await Write(uid: user.uid).addOrUpdateChild({
                     'name' : nameController.text,
                     'age' : int.parse(ageController.text),
                     'ageGroups' : 'adults',
                     'dietPreference' : 'None'
                   }, widget.info);
                 }
-                // else {
-                //   // Update existing child
-                //   Provider.of<UserDataModel>(context, listen: false).updateChild(index!, {
-                //     'name': nameController.text,
-                //     'age': ageController.text,
-                //   });
-                // }
+                else {
+                  await Write(uid: user.uid).addOrUpdateChild({
+                    'name': nameController.text,
+                    'age': int.parse(ageController.text),
+                    'ageGroups': 'children',
+                    'dietPreference': 'None',
+                  }, widget.info, isEditing: true, existingChild: childData[index]);
+
+                }
                 Navigator.of(context).pop();
-              },
+                },
               child: Text('Save'),
             ),
           ],
