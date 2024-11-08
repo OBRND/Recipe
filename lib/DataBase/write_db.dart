@@ -148,6 +148,7 @@ class Write{
       // If the name has changed, remove the old meal plan under the old name
       if (originalName != childName) {
         await Schedule.doc(uid).update({originalName: FieldValue.delete()});
+        updateMealPlan = true;
       }
     } else {
       // If adding a new child
@@ -191,5 +192,17 @@ class Write{
     return await Schedule.doc(uid).update({name: customMealPlan});
   }
 
+  Future deleteChild({required List<dynamic> children, required Map<String, dynamic> existingChild}) async {
 
+    int childIndex = children.indexWhere((child) =>
+    child['name'] == existingChild['name']);
+
+    // Remove the child from the local list
+    children.removeAt(childIndex);
+
+    // Update Firestore with the modified list
+    await user.doc(uid).update({'children': children});
+
+    await Schedule.doc(uid).update({existingChild['name']: FieldValue.delete()});
+  }
 }

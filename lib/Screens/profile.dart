@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meal/DataBase/write_db.dart';
 import 'package:provider/provider.dart';
-
 import '../Models/user_data.dart';
 import '../Models/user_id.dart';
 import '../Theme/themeNotifier.dart';
@@ -30,6 +29,9 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
+    final UserInfo = Provider.of<UserDataModel?>(context);
+    final user = Provider.of<UserID>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile'),
@@ -59,10 +61,22 @@ class _ProfileState extends State<Profile> {
             var child = entry.value;
             return ListTile(
               title: Text('${child['name']} (Age: ${child['age']})'),
-              trailing: IconButton(
-                icon: Icon(Icons.edit),
-                onPressed: () =>
-                    _showChildDialog(context, childData: child, index: index),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () =>
+                        _showChildDialog(
+                            context, childData: child, index: index),
+                  ),
+                  IconButton(
+                      icon: Icon(
+                          Icons.delete_forever, color: Colors.red.shade600),
+                      onPressed: () => _deleteChild(context, child)
+                  ),
+
+                ],
               ),
             );
           }).toList() ?? [],
@@ -71,8 +85,115 @@ class _ProfileState extends State<Profile> {
             onPressed: () => _showChildDialog(context),
             child: Text('Add Child'),
           ),
+          Container(
+
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(25),
+              color: Color(0x47D6BEB8),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0x6ED1D3A2), // Icon background color
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: EdgeInsets.all(8),
+                  child: Icon(
+                    Icons.language,
+                    color: Colors.black87, // Icon color
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Language',
+                    style: TextStyle(
+                      color: Colors.black87, // Text color
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.black54, // Arrow color
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Color.fromARGB(123, 230, 137, 137),
+              // Background color of the button
+              borderRadius: BorderRadius.circular(25), // Rounded corners
+            ),
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0x7EDA6A6A), // Icon background color
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: EdgeInsets.all(8),
+                  child: Icon(
+                    Icons.logout,
+                    color: Colors.red, // Icon color
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Logout',
+                  style: TextStyle(
+                    color: Colors.red, // Text color
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Future<void> _deleteChild(BuildContext context, Map<String, dynamic> child){
+    final user = Provider.of<UserID>(context, listen: false);
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Child'),
+          content: Text(
+              'Are you sure you want to delete this child? This action will permanently delete the child and their associated schedule.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(); // Dismiss the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await Write(uid: user.uid).deleteChild(children: widget.info, existingChild: child);
+                setState(() {});
+                Navigator.of(context)
+                    .pop();
+              },
+              child: Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -109,12 +230,11 @@ class _ProfileState extends State<Profile> {
             ),
             TextButton(
               onPressed: () async{
-                print(widget.info);
                 if (childData == null) {
                   await Write(uid: user.uid).addOrUpdateChild({
                     'name' : nameController.text,
                     'age' : int.parse(ageController.text),
-                    'ageGroups' : 'adults',
+                    'ageGroups' : 'children',
                     'dietPreference' : 'None'
                   }, widget.info);
                 }
@@ -124,9 +244,10 @@ class _ProfileState extends State<Profile> {
                     'age': int.parse(ageController.text),
                     'ageGroups': 'children',
                     'dietPreference': 'None',
-                  }, widget.info, isEditing: true, existingChild: childData[index]);
+                  }, widget.info, isEditing: true, existingChild: childData);
 
                 }
+                setState(() {});
                 Navigator.of(context).pop();
                 },
               child: Text('Save'),
