@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meal/DataBase/write_db.dart';
 import 'package:provider/provider.dart';
+import '../Auth/auth_service.dart';
 import '../Models/user_data.dart';
 import '../Models/user_id.dart';
 import '../Theme/themeNotifier.dart';
@@ -34,126 +35,167 @@ class _ProfileState extends State<Profile> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
+        title: Text('Profile',
+          style: TextStyle(fontSize: 18),
+        ),
       ),
-      body: ListView(
-        padding: EdgeInsets.all(16.0),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Theme toggle
-          SwitchListTile(
-            title: Text('Dark Theme'),
-            value: _isDarkTheme,
-            onChanged: _toggleTheme,
-          ),
-          SizedBox(height: 16.0),
-
-          // Display and manage children info
-          Text(
-            'Children Info',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8.0),
-          ...widget.info
-              .asMap()
-              .entries
-              .map((entry) {
-            int index = entry.key;
-            var child = entry.value;
-            return ListTile(
-              title: Text('${child['name']} (Age: ${child['age']})'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () =>
-                        _showChildDialog(
-                            context, childData: child, index: index),
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Column(
+                children: [ SwitchListTile(
+                  title: Text('Dark Theme',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
-                  IconButton(
-                      icon: Icon(
-                          Icons.delete_forever, color: Colors.red.shade600),
-                      onPressed: () => _deleteChild(context, child)
+                  value: _isDarkTheme,
+                  onChanged: _toggleTheme,
+                ),
+                  SizedBox(height: 16.0),
+                  Text(
+                    'Children Info',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8.0),
+                  // Display and manage children info
+                  Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ...widget.info
+                            .asMap()
+                            .entries
+                            .map((entry) {
+                          int index = entry.key;
+                          var child = entry.value;
+                          return ListTile(
+                            title: Text(
+                                '${child['name']} (Age: ${child['age']})',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.edit, size: 20,),
+                                  onPressed: () =>
+                                      _showChildDialog(
+                                          context, childData: child,
+                                          index: index),
+                                ),
+                                IconButton(
+                                    icon: Icon(
+                                        Icons.delete_forever,
+                                        size: 25,
+                                        color: Colors.red.shade600),
+                                    onPressed: () =>
+                                        _deleteChild(context, child)
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList() ?? [],
+                        ElevatedButton(
+                          onPressed: () => _showChildDialog(context),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add, color: Colors.blue.shade700, size: 20,),
+                              Text('Add Child', style: TextStyle(fontWeight: FontWeight.w600),),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
-                ],
-              ),
-            );
-          }).toList() ?? [],
-          SizedBox(height: 8.0),
-          ElevatedButton(
-            onPressed: () => _showChildDialog(context),
-            child: Text('Add Child'),
+                  SizedBox(height: 8.0),
+                ]),
           ),
-          Container(
-
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
-              color: Color(0x47D6BEB8),
-            ),
-            child: Row(
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Column(
               children: [
                 Container(
+
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Color(0x6ED1D3A2), // Icon background color
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(25),
+                    color: Color(0x47D6BEB8),
                   ),
-                  padding: EdgeInsets.all(8),
-                  child: Icon(
-                    Icons.language,
-                    color: Colors.black87, // Icon color
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Color(0x6ED1D3A2), // Icon background color
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.language,
+                          color: Colors.black87, // Icon color
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Language',
+                          style: TextStyle(
+                            color: Colors.black87, // Text color
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.black54, // Arrow color
+                        size: 14,
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Language',
-                    style: TextStyle(
-                      color: Colors.black87, // Text color
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(123, 230, 137, 137),
+                    borderRadius: BorderRadius.circular(25), // Rounded corners
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                  child: InkWell(
+                    onTap: () {
+                      AuthService().sign_out();
+                    },
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Color(0x7EDA6A6A), // Icon background color
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: EdgeInsets.all(8),
+                          child: Icon(
+                            Icons.logout,
+                            color: Colors.red, // Icon color
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          'Logout',
+                          style: TextStyle(
+                            color: Colors.red, // Text color
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.black54, // Arrow color
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: Color.fromARGB(123, 230, 137, 137),
-              // Background color of the button
-              borderRadius: BorderRadius.circular(25), // Rounded corners
-            ),
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0x7EDA6A6A), // Icon background color
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: EdgeInsets.all(8),
-                  child: Icon(
-                    Icons.logout,
-                    color: Colors.red, // Icon color
-                  ),
-                ),
-                SizedBox(width: 8),
-                Text(
-                  'Logout',
-                  style: TextStyle(
-                    color: Colors.red, // Text color
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+
               ],
             ),
           ),

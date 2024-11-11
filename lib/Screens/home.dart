@@ -37,18 +37,18 @@ class _MyHomePageState extends State<MyHomePage> {
             style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(onPressed: () {
-            AuthService().sign_out();
-          }, icon: Icon(Icons.logout, color: Colors.white)),
-          IconButton(onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (BuildContext context) => Consumer<UserDataModel?>(
-                    builder: (BuildContext context, UserDataModel? value, Widget? child) {
-                       return Profile(info: UserInfo!.children,);
-                      },
+                  builder: (BuildContext context) =>
+                      Consumer<UserDataModel?>(
+                        builder: (BuildContext context, UserDataModel? value,
+                            Widget? child) {
+                          return Profile(info: UserInfo!.children,);
+                        },
                       )),
             );
-          }, icon: Icon(Icons.person, color: Colors.white))
+          },
+              icon: Icon(Icons.person, color: Colors.white))
         ],
       ),
       body: Column(
