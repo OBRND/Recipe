@@ -8,13 +8,14 @@ import 'package:provider/provider.dart';
 
 import 'Theme/themeNotifier.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(ChangeNotifierProvider<ThemeNotifier>(
-    create: (_) => ThemeNotifier(ThemeData.light()),
-    child: MyApp(),
-  ),);
+  runApp(
+    ChangeNotifierProvider<ThemeNotifier>(
+      create: (_) => ThemeNotifier(ThemeData.light()),
+      child: MyApp(),
+    ),);
 }
 
 class MyApp extends StatefulWidget {

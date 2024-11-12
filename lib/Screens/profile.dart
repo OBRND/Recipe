@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meal/DataBase/write_db.dart';
 import 'package:provider/provider.dart';
 import '../Auth/auth_service.dart';
+import '../Models/color_model.dart';
 import '../Models/user_data.dart';
 import '../Models/user_id.dart';
 import '../Theme/themeNotifier.dart';
@@ -27,11 +28,11 @@ class _ProfileState extends State<Profile> {
     Provider.of<ThemeNotifier>(context, listen: false).setTheme(value ? ThemeData.dark() : ThemeData.light());
   }
 
-
   @override
   Widget build(BuildContext context) {
     final UserInfo = Provider.of<UserDataModel?>(context);
     final user = Provider.of<UserID>(context, listen: false);
+    int marker = 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -46,10 +47,12 @@ class _ProfileState extends State<Profile> {
           Padding(
             padding: const EdgeInsets.all(15.0),
             child: Column(
-                children: [ SwitchListTile(
+                children: [
+                  SwitchListTile(
                   title: Text('Dark Theme',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
+                  activeColor: Colors.black38,
                   value: _isDarkTheme,
                   onChanged: _toggleTheme,
                 ),
@@ -61,8 +64,8 @@ class _ProfileState extends State<Profile> {
                   SizedBox(height: 8.0),
                   // Display and manage children info
                   Card(
+                    margin: EdgeInsets.all(8),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         ...widget.info
                             .asMap()
@@ -70,7 +73,19 @@ class _ProfileState extends State<Profile> {
                             .map((entry) {
                           int index = entry.key;
                           var child = entry.value;
+                          marker++;
                           return ListTile(
+                            minVerticalPadding: 5,
+                            horizontalTitleGap: 10,
+                            leading: Container(
+                              width: 8,
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(12),
+                                    bottomLeft: Radius.circular(12)),
+                                color: ChildColorModel.colorOfChild(marker - 1),
+                              ),
+                            ),
                             title: Text(
                                 '${child['name']} (Age: ${child['age']})',
                               style: TextStyle(fontSize: 13),
@@ -98,14 +113,15 @@ class _ProfileState extends State<Profile> {
                           );
                         }).toList() ?? [],
                         ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade300, // Set the button color to grey
+                          ),
                           onPressed: () => _showChildDialog(context),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.add, color: Colors.blue.shade700, size: 20,),
-                              Text('Add Child', style: TextStyle(fontWeight: FontWeight.w600),),
+                              Icon(Icons.add, color: Colors.blue.shade700, size: 22,),
+                              Text('Add Child', style: TextStyle(fontSize: 12),),
                             ],
                           ),
                         ),

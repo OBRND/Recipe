@@ -2,6 +2,7 @@ import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:meal/Auth/auth_service.dart';
 import 'package:meal/DataBase/fetch_db.dart';
+import 'package:meal/Models/color_model.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:meal/Screens/profile.dart';
 import 'package:meal/Screens/recipe_details.dart';
@@ -21,7 +22,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String name = "";
   int selected = DateTime.now().weekday;
-  List<Color> children = [Colors.green.shade400, Colors.redAccent.shade400, Colors.orange.shade600, Colors.blueAccent.shade400, Colors.tealAccent.shade400];
   int index = 0;
 
   @override
@@ -48,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       )),
             );
           },
-              icon: Icon(Icons.person, color: Colors.white))
+              icon: Icon(Icons.settings, color: Colors.white))
         ],
       ),
       body: Column(
@@ -211,7 +211,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         borderRadius: const BorderRadius.only(
                                             topLeft: Radius.circular(12),
                                             bottomLeft: Radius.circular(12)),
-                                        color: children[index % 5],
+                                        color: ChildColorModel.colorOfChild(index - 1),
                                       ),
                                     ),
                                     Container(
