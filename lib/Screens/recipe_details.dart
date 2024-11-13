@@ -12,7 +12,7 @@ class RecipeDetailsPage extends StatefulWidget {
   final String recipeID;
   final String foodName;
   final bool selected;
-  final List<Ingredient> ingredients;
+  final List ingredients;
 
   const RecipeDetailsPage({
     Key? key,
@@ -110,6 +110,10 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Text('Instructions'),
+          ),
           Expanded(
             child: Container(
               padding: EdgeInsets.all(16),
@@ -119,42 +123,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(15.0),
-                          child: Text('Instructions'),
-                        ),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-                        roww(index),
-
-                      ],
-                    ),
+                    child: roww(index),
                   );
                 },
               ),
@@ -166,13 +135,13 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
   }
 
   Widget roww(int index){
-    return  Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
           flex: 5,
           child: Text(
-            widget.ingredients[index].name,
+            widget.ingredients[index]['name'],
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -183,7 +152,8 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
         Expanded(
           flex: 4,
           child: Text(
-            widget.ingredients[index].measurement,
+            widget.ingredients[index]['quantity'].toString() + ' ' +
+            widget.ingredients[index]['measurement'],
             style: const TextStyle(
               fontSize: 15,
               color: Colors.black54,
@@ -198,12 +168,3 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
 
 }
 
-class Ingredient {
-  final String name;
-  final String measurement;
-
-  Ingredient({
-    required this.name,
-    required this.measurement,
-  });
-}

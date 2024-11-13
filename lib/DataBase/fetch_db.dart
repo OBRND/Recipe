@@ -123,11 +123,13 @@ class Fetch{
       String name = recipe['name'];  
       int cal = recipe['cal'];
       // String decription = recipe['discription'];
-      // List ingredients = recipe['ingredients'];
+      List ingredients = recipe['ingredients'];
 
     return {
       'name': name,
-      'cal' : cal};
+      'cal': cal,
+      'ingredients': ingredients
+    };
   }
 
   Future getSavedRecipes(List Ids) async {
@@ -145,7 +147,8 @@ class Fetch{
        return {
          'id': id,
          'name': recipeDetails['name'],
-         'cal': recipeDetails['cal']
+         'cal': recipeDetails['cal'],
+         'ingredients': recipeDetails['ingredients']
        };
      }).toList(),
    );

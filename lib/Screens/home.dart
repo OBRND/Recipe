@@ -188,9 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         imageURL:
                                         'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
                                         foodName: meal['name'],
-                                        ingredients: [
-                                          Ingredient(name: 'pepper', measurement: '20 oz')
-                                        ],
+                                        ingredients: meal['ingredients'],
                                         selected: userData?.savedRecipes.contains(meal['id']) ?? false,
                                       );
                                     },
