@@ -205,4 +205,125 @@ class Write{
 
     await Schedule.doc(uid).update({existingChild['name']: FieldValue.delete()});
   }
+
+  Future<void> addOrUpdateShoppingList() async {
+    // Initialize a map to store ingredient totals for all children
+    Map<String, Map<String, dynamic>> ingredientMap = {};
+
+    // Fetch the current meal plan document for the user
+    DocumentSnapshot scheduleSnapshot = await Schedule.doc(uid).get();
+    Map<String, dynamic> scheduleData = scheduleSnapshot.data() as Map<String, dynamic>;
+
+    if (scheduleData != null) {
+      // Create a list to store all the future requests for recipe data
+      List<Future<DocumentSnapshot>> recipeFutures = [];
+
+      // Loop through the meal plan and collect all the recipe references
+      for (var childName in scheduleData.keys) {
+        Map<String, dynamic> childSchedule = scheduleData[childName];
+
+        if (childSchedule != null) {
+          for (var mealType in childSchedule.keys) {
+            for (DocumentReference recipeRef in childSchedule[mealType]) {
+              // Collect all the recipe references into a list
+              recipeFutures.add(recipeRef.get());
+            }
+          }
+        }
+      }
+
+
+      // Wait for all recipe references to be fetched at once
+      List<DocumentSnapshot> recipeSnapshots = await Future.wait(recipeFutures);
+
+      // Process the fetched recipe data
+      for (var recipeSnapshot in recipeSnapshots) {
+        Map<String, dynamic> recipeData = recipeSnapshot.data() as Map<String, dynamic>;
+
+        print(recipeData);
+        if (recipeData != null && recipeData['ingredients'] != null) {
+          List ingredients = recipeData['ingredients'];
+
+          for (var ingredient in ingredients) {
+            String ingredientName = ingredient['name'];
+            int quantity = ingredient['quantity'];
+            String measurement = ingredient['measurement'];
+
+            // Check if the ingredient is already in the map
+            if (ingredientMap.containsKey(ingredientName)) {
+              // Add the quantity if units match
+              // if (ingredientMap[ingredientName]?['measurement'] == measurement) {
+                ingredientMap[ingredientName]?['quantity'] += quantity;
+                print(ingredientMap.length);
+              // } else {
+              //   // Handle unit mismatch if needed (optional: log or notify user)
+              // }
+            } else {
+              // Add new ingredient entry
+              ingredientMap[ingredientName] = {
+                'quantity': quantity,
+                'unit': measurement,
+                'isChecked': false, // Default to not bought
+              };
+            }
+          }
+        }
+    }
+
+  // Update the combined shopping list in Firestore
+      await FirebaseFirestore.instance
+          .collection('Shopping_list')
+          .doc(uid)
+          .set({
+        'ingredients': ingredientMap,
+      }, SetOptions(merge: true));
+    }
+  }
+
+// Function to handle marking items as bought
+  Future<void> updateShoppingListItemStatus(String uid, String ingredientName, bool isChecked) async {
+    DocumentReference shoppingListRef = FirebaseFirestore.instance.collection('Shopping_list').doc(uid);
+
+    // Update the specific ingredient's status
+    await shoppingListRef.update({
+      'ingredients.$ingredientName.isChecked': isChecked,
+    });
+  }
+
+  Future<void> updateIngredientListInDatabase(
+      String uid, Map<String, dynamic> currentIngredients, List<Map<String, dynamic>> addedIngredients, List<Map<String, dynamic>> removedIngredients) async {
+    // Helper function to update the ingredient quantities in the current map
+    void updateQuantity(Map<String, dynamic> map, List<Map<String, dynamic>> ingredients, bool isAdding) {
+      for (var ingredient in ingredients) {
+        String name = ingredient['name'];
+        int quantity = ingredient['quantity'];
+        String measurement = ingredient['measurement'];
+
+        if (map.containsKey(name)) {
+          map[name]['quantity'] += (isAdding ? quantity : -quantity);
+
+          // Remove the ingredient if the quantity goes to zero or below
+          if (map[name]['quantity'] <= 0) {
+            map.remove(name);
+          }
+        } else if (isAdding) {
+          // Add new ingredient to the map
+          map[name] = {
+            'quantity': quantity,
+            'measurement': measurement,
+            'isChecked': false, // Default value for new ingredients
+          };
+        }
+      }
+    }
+
+    // Update the current ingredients by adding and removing as needed
+    updateQuantity(currentIngredients, addedIngredients, true);
+    updateQuantity(currentIngredients, removedIngredients, false);
+
+    // Reference to update the ingredient list in the database
+    await Schedule.doc(uid).set(currentIngredients);
+  }
+
+
 }

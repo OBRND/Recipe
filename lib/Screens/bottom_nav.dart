@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meal/Screens/recipe.dart';
 import 'package:meal/Screens/home.dart';
-import 'package:meal/Screens/meals.dart';
 import 'package:meal/Screens/shopping_list.dart';
 import 'package:sliding_clipped_nav_bar/sliding_clipped_nav_bar.dart';
 
@@ -64,7 +63,7 @@ class _bottomNavState extends State<bottomNav> {
 }
 
 List<Widget> _listOfWidget = <Widget>[
-  const Meals(),
+  const ShoppingList(),
   const MyHomePage(),
   const Recipes(),
 ];
