@@ -8,6 +8,7 @@ class Write{
 
   final CollectionReference user = FirebaseFirestore.instance.collection('Users');
   final CollectionReference Schedule = FirebaseFirestore.instance.collection('Schedule');
+  final CollectionReference Shopping = FirebaseFirestore.instance.collection('Shopping_list');
 
   Future addUser(String firstname, String email) async{
     List<Map<String, dynamic>> childInfo = [
@@ -290,10 +291,10 @@ class Write{
     });
   }
 
-  Future<void> updateIngredientListInDatabase(
-      String uid, Map<String, dynamic> currentIngredients, List<Map<String, dynamic>> addedIngredients, List<Map<String, dynamic>> removedIngredients) async {
+  Future<void> updateIngredients(addedIngredients, removedIngredients) async {
     // Helper function to update the ingredient quantities in the current map
-    void updateQuantity(Map<String, dynamic> map, List<Map<String, dynamic>> ingredients, bool isAdding) {
+    print(addedIngredients.toString() + removedIngredients.toString());
+    void updateQuantity(Map<String, dynamic> map, ingredients, bool isAdding) {
       for (var ingredient in ingredients) {
         String name = ingredient['name'];
         int quantity = ingredient['quantity'];
@@ -317,12 +318,23 @@ class Write{
       }
     }
 
+    Map<String, dynamic> currentIngredients = await Fetch(uid: uid).shoppingList();
     // Update the current ingredients by adding and removing as needed
     updateQuantity(currentIngredients, addedIngredients, true);
     updateQuantity(currentIngredients, removedIngredients, false);
 
     // Reference to update the ingredient list in the database
-    await Schedule.doc(uid).set(currentIngredients);
+    await Shopping.doc(uid).set({'ingredients' : currentIngredients});
+  }
+
+  Future checkShopping(ingredientName, newValue) async{
+    return FirebaseFirestore.instance
+        .collection('Shopping_list')
+        .doc(uid)
+        .update({
+      'ingredients.$ingredientName.isChecked': newValue,
+    });
+
   }
 
 

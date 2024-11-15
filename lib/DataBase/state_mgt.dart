@@ -12,3 +12,10 @@ Stream<UserDataModel?> userStream(String userId) {
     return null;
   });
 }
+
+Stream<DocumentSnapshot?> Shopping(String uid) {
+  return FirebaseFirestore.instance
+      .collection('Shopping_list')
+      .doc(uid)
+      .snapshots();
+}

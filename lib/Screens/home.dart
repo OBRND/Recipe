@@ -34,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: const Color.fromARGB(169, 126, 3, 3),
         title: Text(
             UserInfo == null ? "Welcome back " : "Welcome back " + UserInfo.name,
-            style: TextStyle(color: Colors.white)),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w300, fontSize: 18)),
         actions: [
           IconButton(onPressed: () {
             Navigator.of(context).push(

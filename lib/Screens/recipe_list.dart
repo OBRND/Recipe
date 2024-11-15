@@ -48,6 +48,7 @@ class _RecipeListState extends State<RecipeList> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserID>(context);
+    Write write = Write(uid: user.uid);
     if (widget.swap && widget.index != null) {
       _fetchRecipes(user.uid, widget.index);
     }
@@ -119,16 +120,15 @@ class _RecipeListState extends State<RecipeList> {
                 itemBuilder: (context, index) =>
                     InkWell(
                       onTap: () {
-                        Write(uid: user.uid).updateRecent(
+                        write.updateRecent(
                             filteredRecipes[index]['id']);
                         print(filteredRecipes[index]);
-                        widget.swap == true ? _showSwapDialog(
-                          context,
-                              filteredRecipes,
-                              index,
+                        widget.swap == true ? _showSwapDialog(context, filteredRecipes, index,
                               () {
                             Navigator.pop(context);
-                            Write(uid: user.uid).createCustomMealPlanWithSwap(weeklyPlan, filteredRecipes[index]['id'], recipesIndex, widget.day!, widget.child!, widget.userData!.children);
+                            write.createCustomMealPlanWithSwap(weeklyPlan, filteredRecipes[index]['id'],
+                                recipesIndex, widget.day!, widget.child!, widget.userData!.children);
+                            write.updateIngredients(filteredRecipes[index]['ingredients'], widget.meal['ingredients']);
                         }) :
                         Navigator.of(context).push(
                           MaterialPageRoute(
