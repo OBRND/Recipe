@@ -334,7 +334,15 @@ class Write{
         .update({
       'ingredients.$ingredientName.isChecked': newValue,
     });
+  }
 
+  Future addShoppingList(ingredientName, newValue) async{
+    return FirebaseFirestore.instance
+        .collection('Shopping_list')
+        .doc(uid)
+        .update({
+      'ingredients.$ingredientName': newValue,
+    });
   }
 
 
