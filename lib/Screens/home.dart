@@ -11,15 +11,16 @@ import 'package:provider/provider.dart';
 import '../Models/user_id.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({Key? key}) : super(key: key);
 
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-
+class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMixin{
+  @override
+  bool get wantKeepAlive => true; // Keeps the state alive
   String name = "";
   int selected = DateTime.now().weekday;
   int index = 0;
@@ -28,6 +29,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     final UserInfo = Provider.of<UserDataModel?>(context);
     final user = Provider.of<UserID>(context);
+    super.build(context);
 
     return Scaffold(
       appBar: AppBar(

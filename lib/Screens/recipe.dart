@@ -13,9 +13,13 @@ class Recipes extends StatefulWidget {
   State<Recipes> createState() => _RecipesState();
 }
 
-class _RecipesState extends State<Recipes> {
+class _RecipesState extends State<Recipes> with AutomaticKeepAliveClientMixin{
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
         body: Column(
             children: [

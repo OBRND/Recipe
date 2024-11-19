@@ -14,10 +14,13 @@ class ShoppingList extends StatefulWidget {
   State<ShoppingList> createState() => _ShoppingListState();
 }
 
-class _ShoppingListState extends State<ShoppingList> {
+class _ShoppingListState extends State<ShoppingList> with AutomaticKeepAliveClientMixin{
   final _ingredientController = TextEditingController();
   final _amountController = TextEditingController();
   String _selectedMeasurement = 'kg';
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
@@ -28,6 +31,7 @@ class _ShoppingListState extends State<ShoppingList> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final user = Provider.of<UserID>(context);
     Write write = Write(uid: user.uid);
 
@@ -47,7 +51,6 @@ class _ShoppingListState extends State<ShoppingList> {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           }
-
           Map<String, dynamic> shoppingListData =
           snapshot.data?.data() as Map<String, dynamic>;
 

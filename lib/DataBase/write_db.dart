@@ -23,6 +23,7 @@ class Write{
         'dietPreference' : 'Non spicy'
       },
     ];
+    UpdateShoppingList(false);
     return await user.doc(uid).set({
       "name" : firstname,
       "children" : childInfo,
@@ -207,7 +208,7 @@ class Write{
     await Schedule.doc(uid).update({existingChild['name']: FieldValue.delete()});
   }
 
-  Future<void> addOrUpdateShoppingList() async {
+  Future<void> UpdateShoppingList(bool add) async {
     // Initialize a map to store ingredient totals for all children
     Map<String, Map<String, dynamic>> ingredientMap = {};
 
@@ -270,11 +271,13 @@ class Write{
           }
         }
     }
+      //deletes a preexisting Shopping list before it adds the new one
+      if(add){
+        await Shopping.doc(uid).delete();
+      }
 
   // Update the combined shopping list in Firestore
-      await FirebaseFirestore.instance
-          .collection('Shopping_list')
-          .doc(uid)
+      await Shopping.doc(uid)
           .set({
         'ingredients': ingredientMap,
       }, SetOptions(merge: true));

@@ -305,6 +305,7 @@ class _ProfileState extends State<Profile> {
                   }, widget.info, isEditing: true, existingChild: childData);
 
                 }
+                Write(uid: user.uid).UpdateShoppingList(true);
                 setState(() {});
                 Navigator.of(context).pop();
                 },
