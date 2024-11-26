@@ -38,7 +38,7 @@ class _MyAppState extends State<MyApp> {
         child: MaterialApp(
             title: 'Meal planner',
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
               useMaterial3: true,
             ),
             home: AuthWrapper()

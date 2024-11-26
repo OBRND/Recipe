@@ -39,20 +39,23 @@ class _bottomNavState extends State<bottomNav> {
               duration: const Duration(milliseconds: 400),
               curve: Curves.easeOutQuad);
         },
-        iconSize: 30,
-        activeColor: Color(0xFF01579B),
+        iconSize: 25,
+        fontSize: 15,
+        fontWeight: FontWeight.w400,
+        activeColor: Color(0xffa61208),
+        inactiveColor: Colors.grey,
         selectedIndex: selectedIndex,
         barItems: [
           BarItem(
-            icon: Icons.list_alt,
+            icon: Icons.list,
             title: 'Shopping list',
           ),
           BarItem(
-            icon: Icons.home_filled,
+            icon: Icons.home_sharp,
             title: 'Home',
           ),
           BarItem(
-            icon: Icons.dining_sharp,
+            icon: Icons.dining_outlined,
             title: 'Recipes',
           ),
            /// Add more BarItem if you want

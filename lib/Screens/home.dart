@@ -33,9 +33,10 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(169, 126, 3, 3),
+        backgroundColor: const Color.fromARGB(219, 161, 14, 14),
         title: Text(
-            UserInfo == null ? "Welcome back " : "Welcome back " + UserInfo.name,
+            UserInfo == null ? "Your plan" :
+            "Hey " + UserInfo.name.substring(0,1).toUpperCase()+ UserInfo.name.substring(1) + ", here's your plan",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w300, fontSize: 18)),
         actions: [
           IconButton(onPressed: () {
@@ -57,39 +58,50 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          EasyDateTimeLine(
-            initialDate: DateTime.now(),
-            onDateChange: (selectedDate) async {
-              setState(() {
-                selected = selectedDate.weekday;
-              });
-            },
-            headerProps: const EasyHeaderProps(
-              monthPickerType: MonthPickerType.switcher,
-              dateFormatter: DateFormatter.fullDateDMY(),
-            ),
-            dayProps: const EasyDayProps(
-              height: 80,
-              todayHighlightColor: Color.fromARGB(255, 252, 13, 13),
-              todayStyle: DayStyle(
-                  borderRadius: 30
-              ),
-              dayStructure: DayStructure.dayStrDayNum,
-              activeDayStyle: DayStyle(
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+            child: EasyDateTimeLine(
+              initialDate: DateTime.now(),
+              onDateChange: (selectedDate) async {
+                setState(() {
+                  selected = selectedDate.weekday;
+                });
+              },
+              timeLineProps: EasyTimeLineProps(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color.fromARGB(208, 179, 12, 12),
-                      Color(0xffe3dfdc),
-                    ],
+                borderRadius: BorderRadius.circular(25),
+                color: Color(0x47D6BEB8),
+              ),
+              ),
+              headerProps: const EasyHeaderProps(
+                showMonthPicker: false,
+                showHeader: false,
+                monthPickerType: MonthPickerType.switcher,
+                dateFormatter: DateFormatter.fullDateDMY(),
+              ),
+              dayProps: const EasyDayProps(
+                inactiveDayStrStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                activeDayStrStyle: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
+                todayStrStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                inactiveDayNumStyle: TextStyle(fontSize: 12, color: Colors.grey),
+                activeDayNumStyle: TextStyle(fontSize: 12, color: Colors.white),
+                todayNumStyle: TextStyle(fontSize: 12),
+                height: 60,
+                width: 60,
+                todayHighlightColor: Color(0xff9da50a),
+                todayStyle: DayStyle(
+                    borderRadius: 50
+                ),
+                dayStructure: DayStructure.dayStrDayNum,
+                activeDayStyle: DayStyle(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(50)),
+                    color: Colors.grey
                   ),
                 ),
-              ),
-              inactiveDayStyle: DayStyle(
-                borderRadius: 32.0,
+                inactiveDayStyle: DayStyle(
+                  borderRadius: 50.0,
+                ),
               ),
             ),
           ),
