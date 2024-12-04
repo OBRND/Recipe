@@ -13,51 +13,89 @@ class Recipes extends StatefulWidget {
   State<Recipes> createState() => _RecipesState();
 }
 
-class _RecipesState extends State<Recipes> with AutomaticKeepAliveClientMixin{
+class _RecipesState extends State<Recipes> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-        body: Column(
-            children: [
-              Container(
-                child: Categories(context),
-              ),
-              Expanded(
-                child: Container(
-                  child: DefaultTabController(
-                    length: 2, // Two tabs: Saved Recipes and Recently Viewed
-                    child: Column(
-                      children: [
-                        // Tab selector for switching between saved and recent recipes.
-                        TabBar(
-                          labelColor: Colors.black,
-                          unselectedLabelColor: Colors.black45,
-                          indicatorColor: Color(0xD7DF1313),
-                          onTap: (i) {},
-                          tabs: const [
-                            Tab(text: 'Recently Viewed'),
-                            Tab(text: 'Saved Recipes'),
-                          ],
-                        ),
-                        Expanded(
-                          child: TabBarView(
-                            children: [
-                              commonFuture(true, context),
-                              commonFuture(false, context)
-                            ],
-                          ),
-                        ),
+    return DefaultTabController(
+      length: 2, // Two tabs: All Recipes and Ideas
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(40),
+          child: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 1,
+            title: const TabBar(
+              labelColor: Colors.black,
+              unselectedLabelColor: Colors.black45,
+              indicatorColor: Color(0xFFFF3C00),
+              tabs: [
+                Tab(text: "Ideas",
+                height: 30,),
+                Tab(text: "All Recipes",
+                height: 30),
+              ],
+            ),
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            AllRecipesTab(), // New widget for "All Recipes"
+            IdeasTab(),      // New widget for "Ideas"
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AllRecipesTab extends StatelessWidget {
+  const AllRecipesTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = Provider.of<UserID>(context);
+    final userDataa = Provider.of<UserDataModel?>(context);
+
+    return Column(
+        children: [
+          Container(
+            child: Categories(context),
+          ),
+          Expanded(
+            child: Container(
+              child: DefaultTabController(
+                length: 2, // Two tabs: Saved Recipes and Recently Viewed
+                child: Column(
+                  children: [
+                    // Tab selector for switching between saved and recent recipes.
+                    TabBar(
+                      labelColor: Colors.black,
+                      unselectedLabelColor: Colors.black45,
+                      indicatorColor: Color(0xD7DF1313),
+                      onTap: (i) {},
+                      tabs: const [
+                        Tab(text: 'Recently Viewed'),
+                        Tab(text: 'Saved Recipes'),
                       ],
                     ),
-                  ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          commonFuture(true, context),
+                          commonFuture(false, context)
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ]
-        )
+            ),
+          ),
+        ]
     );
   }
 
@@ -143,6 +181,9 @@ class _RecipesState extends State<Recipes> with AutomaticKeepAliveClientMixin{
     );
   }
 
+
+
+
   Widget Categories(context) {
     final user = Provider.of<UserID>(context);
     final Userdata = Provider.of<UserDataModel?>(context);
@@ -164,12 +205,12 @@ class _RecipesState extends State<Recipes> with AutomaticKeepAliveClientMixin{
                     List<Map<String, dynamic>> recipes = await User.getAllRecipes();
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => RecipeList(recipes: recipes, userData: Userdata, swap: false, index: null, meal: {}, day: null, name: [],
-                        child: null,)));
+                          child: null,)));
                   } else {
                     List<Map<String, dynamic>> recipes = await User.getRecipesByType(index);
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => RecipeList(recipes: recipes, userData: Userdata, swap: false, index: null, meal: {}, day: null, name: [],
-                        child: null,)));
+                          child: null,)));
                   }
                 },
                 child: Column(
@@ -209,6 +250,95 @@ class _RecipesState extends State<Recipes> with AutomaticKeepAliveClientMixin{
               ),
             ),
       ),
+    );
+  }
+}
+
+class IdeasTab extends StatelessWidget {
+  const IdeasTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SectionTitle("Recommended for You"),
+          RecommendedSection(),
+          const SectionTitle("Community Picks"),
+          CommunitySection(),
+          const SectionTitle("Explore More"),
+          ExploreMoreSection(),
+        ],
+      ),
+    );
+  }
+}
+
+class SectionTitle extends StatelessWidget {
+  final String title;
+
+  const SectionTitle(this.title, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+class RecommendedSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Replace this placeholder with the logic to display recommended recipes.
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 5, // Example count
+        itemBuilder: (context, index) {
+          return Card(
+            margin: const EdgeInsets.all(8),
+            child: Container(width: 150, color: Colors.grey[300]),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class CommunitySection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Replace this placeholder with the logic to display trending recipes.
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 5, // Example count
+        itemBuilder: (context, index) {
+          return Card(
+            margin: const EdgeInsets.all(8),
+            child: Container(width: 150, color: Colors.grey[300]),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ExploreMoreSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Replace this placeholder with the logic to display additional content.
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text("Explore more content coming soon..."),
     );
   }
 }

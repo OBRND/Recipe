@@ -33,11 +33,10 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(219, 161, 14, 14),
         title: Text(
             UserInfo == null ? "Your plan" :
             "Hey " + UserInfo.name.substring(0,1).toUpperCase()+ UserInfo.name.substring(1) + ", here's your plan",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w300, fontSize: 18)),
+            style: TextStyle(color: Color.fromARGB(255, 39, 32, 34), fontWeight: FontWeight.w300, fontSize: 18)),
         actions: [
           IconButton(onPressed: () {
             Navigator.of(context).push(
@@ -70,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
               timeLineProps: EasyTimeLineProps(
                 decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
-                color: Color(0x47D6BEB8),
+                color: Colors.grey[300],
               ),
               ),
               headerProps: const EasyHeaderProps(
@@ -79,27 +78,31 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                 monthPickerType: MonthPickerType.switcher,
                 dateFormatter: DateFormatter.fullDateDMY(),
               ),
-              dayProps: const EasyDayProps(
-                inactiveDayStrStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                activeDayStrStyle: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
-                todayStrStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
-                inactiveDayNumStyle: TextStyle(fontSize: 12, color: Colors.grey),
-                activeDayNumStyle: TextStyle(fontSize: 12, color: Colors.white),
-                todayNumStyle: TextStyle(fontSize: 12),
+              dayProps: EasyDayProps(
+                inactiveDayStrStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                activeDayStrStyle: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
+                todayStrStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                inactiveDayNumStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+                activeDayNumStyle: const TextStyle(fontSize: 12, color: Colors.white),
+                todayNumStyle: const TextStyle(fontSize: 12),
                 height: 60,
                 width: 60,
-                todayHighlightColor: Color(0xff9da50a),
-                todayStyle: DayStyle(
+                todayHighlightColor: const Color(0xff9da50a),
+                todayStyle: const DayStyle(
                     borderRadius: 50
                 ),
                 dayStructure: DayStructure.dayStrDayNum,
-                activeDayStyle: DayStyle(
+                activeDayStyle: const DayStyle(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(50)),
-                    color: Colors.grey
+                    color: Color.fromARGB(219, 241, 39, 3)
                   ),
                 ),
                 inactiveDayStyle: DayStyle(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(50)),
+                      color: Colors.grey[200]
+                  ),
                   borderRadius: 50.0,
                 ),
               ),
@@ -214,6 +217,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                               height: 100,
                               margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
                               child: Card(
+                                // color: Color.fromARGB(255, 101, 77, 74),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -247,15 +251,15 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                                           Text(
                                             meal['name'],
                                             style: const TextStyle(
-                                              color: Colors.black54,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
                                           const SizedBox(height: 4.0),
                                           Text(
                                             'Type: ${meal['mealType']}',
-                                            style: const TextStyle(
-                                              color: Colors.grey,
+                                            style: TextStyle(
+                                              color: Colors.grey[300],
                                               fontSize: 12.0,
                                             ),
                                           ),

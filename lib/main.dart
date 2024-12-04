@@ -4,6 +4,7 @@ import 'package:meal/Auth/auth_service.dart';
 import 'package:meal/Models/user_id.dart';
 import 'package:meal/Screens/Wrapper.dart';
 import 'package:meal/Screens/bottom_nav.dart';
+import 'package:meal/Theme/app_theme.dart';
 import 'package:provider/provider.dart';
 
 import 'Theme/themeNotifier.dart';
@@ -37,10 +38,7 @@ class _MyAppState extends State<MyApp> {
         initialData: null,
         child: MaterialApp(
             title: 'Meal planner',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-              useMaterial3: true,
-            ),
+            theme: AppThemes.lightTheme,
             home: AuthWrapper()
         ));
   }
