@@ -19,44 +19,6 @@ class _RecipesState extends State<Recipes> with AutomaticKeepAliveClientMixin {
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    return DefaultTabController(
-      length: 2, // Two tabs: All Recipes and Ideas
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(40),
-          child: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 1,
-            title: const TabBar(
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.black45,
-              indicatorColor: Color(0xFFFF3C00),
-              tabs: [
-                Tab(text: "Ideas",
-                height: 30,),
-                Tab(text: "All Recipes",
-                height: 30),
-              ],
-            ),
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            AllRecipesTab(), // New widget for "All Recipes"
-            IdeasTab(),      // New widget for "Ideas"
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class AllRecipesTab extends StatelessWidget {
-  const AllRecipesTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
     final user = Provider.of<UserID>(context);
     final userDataa = Provider.of<UserDataModel?>(context);
 
@@ -73,9 +35,7 @@ class AllRecipesTab extends StatelessWidget {
                   children: [
                     // Tab selector for switching between saved and recent recipes.
                     TabBar(
-                      labelColor: Colors.black,
                       unselectedLabelColor: Colors.black45,
-                      indicatorColor: Color(0xD7DF1313),
                       onTap: (i) {},
                       tabs: const [
                         Tab(text: 'Recently Viewed'),
@@ -231,12 +191,12 @@ class AllRecipesTab extends StatelessWidget {
                           borderRadius: BorderRadius.only(
                               bottomLeft: Radius.circular(10),
                               bottomRight: Radius.circular(10)),
-                          color: Color(0xE4C10606),
+                          color: Color(0xF4F32607),
                         ),
 
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text(style: TextStyle(color: Colors.white),
+                          child: Text(style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               index == 0 ? 'Breakfast' :
                               index == 1 ? 'Main Dish' :
                               index == 2 ? 'Dessert' :
@@ -254,91 +214,4 @@ class AllRecipesTab extends StatelessWidget {
   }
 }
 
-class IdeasTab extends StatelessWidget {
-  const IdeasTab({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionTitle("Recommended for You"),
-          RecommendedSection(),
-          const SectionTitle("Community Picks"),
-          CommunitySection(),
-          const SectionTitle("Explore More"),
-          ExploreMoreSection(),
-        ],
-      ),
-    );
-  }
-}
-
-class SectionTitle extends StatelessWidget {
-  final String title;
-
-  const SectionTitle(this.title, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class RecommendedSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // Replace this placeholder with the logic to display recommended recipes.
-    return SizedBox(
-      height: 200,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 5, // Example count
-        itemBuilder: (context, index) {
-          return Card(
-            margin: const EdgeInsets.all(8),
-            child: Container(width: 150, color: Colors.grey[300]),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class CommunitySection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // Replace this placeholder with the logic to display trending recipes.
-    return SizedBox(
-      height: 200,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 5, // Example count
-        itemBuilder: (context, index) {
-          return Card(
-            margin: const EdgeInsets.all(8),
-            child: Container(width: 150, color: Colors.grey[300]),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class ExploreMoreSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // Replace this placeholder with the logic to display additional content.
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text("Explore more content coming soon..."),
-    );
-  }
-}

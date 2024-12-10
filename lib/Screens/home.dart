@@ -7,6 +7,7 @@ import 'package:meal/Models/user_data.dart';
 import 'package:meal/Screens/profile.dart';
 import 'package:meal/Screens/recipe_details.dart';
 import 'package:meal/Screens/recipe_list.dart';
+import 'package:meal/Screens/shopping_list.dart';
 import 'package:provider/provider.dart';
 import '../Models/user_id.dart';
 
@@ -33,6 +34,29 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(onPressed: (){
+          Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  Consumer<UserDataModel?>(
+                    builder: (BuildContext context, UserDataModel? value,
+                        Widget? child) {
+                      return Profile(info: UserInfo!.children,);
+                    },
+                  )),
+        );},
+            icon: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                width: 1.5,
+                  color: Colors.black
+              ),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Icon(Icons.person_outline_rounded),
+            ))),
         title: Text(
             UserInfo == null ? "Your plan" :
             "Hey " + UserInfo.name.substring(0,1).toUpperCase()+ UserInfo.name.substring(1) + ", here's your plan",
@@ -42,15 +66,9 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
             Navigator.of(context).push(
               MaterialPageRoute(
                   builder: (BuildContext context) =>
-                      Consumer<UserDataModel?>(
-                        builder: (BuildContext context, UserDataModel? value,
-                            Widget? child) {
-                          return Profile(info: UserInfo!.children,);
-                        },
-                      )),
-            );
+                      ShoppingList()));
           },
-              icon: Icon(Icons.settings, color: Colors.white))
+              icon: Icon(Icons.shopping_cart_outlined))
         ],
       ),
       body: Column(
@@ -58,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+            padding: const EdgeInsets.only(left: 8, right: 8),
             child: EasyDateTimeLine(
               initialDate: DateTime.now(),
               onDateChange: (selectedDate) async {
@@ -95,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                 activeDayStyle: const DayStyle(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(50)),
-                    color: Color.fromARGB(219, 241, 39, 3)
+                    color: Color.fromARGB(219, 243, 38, 7)
                   ),
                 ),
                 inactiveDayStyle: DayStyle(
@@ -214,54 +232,61 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                               );
                             },
                             child: Container(
-                              height: 100,
+                              height: 200,
                               margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
                               child: Card(
                                 // color: Color.fromARGB(255, 101, 77, 74),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      width: 8,
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(12),
-                                            bottomLeft: Radius.circular(12)),
-                                        color: ChildColorModel.colorOfChild(index - 1),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 100,
-                                      decoration: const BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                            topRight: Radius.circular(12),
-                                            bottomRight: Radius.circular(12)),
-                                        image: DecorationImage(
-                                          image: NetworkImage(
-                                              'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066'),
-                                          fit: BoxFit.fill,
-                                        ),
-                                      ),
+                                    Stack(
+                                        children: [
+                                          Container(
+                                            width: MediaQuery.sizeOf(context).width/1.9,
+                                            decoration: const BoxDecoration(
+                                              borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(12),
+                                                  bottomLeft: Radius.circular(12),
+                                                topRight: Radius.circular(5),
+                                                bottomRight: Radius.circular(5)
+                                              ),
+                                              image: DecorationImage(
+                                                fit: BoxFit.fitWidth,
+                                                image: NetworkImage(
+                                                    'https://www.onehappydish.com/wp-content/uploads/2023/11/scrambled-eggs-with-cream-cheese-recipe.jpg'),
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Container(
+                                              width: 15,
+                                              height: 15,
+                                              decoration: BoxDecoration(
+                                                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                                color: ChildColorModel.colorOfChild(index - 1),
+                                              ),
+                                            ),
+                                          ),
+                                        ]
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            meal['name'],
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w700,
+                                          Container(
+                                            width: MediaQuery.sizeOf(context).width/3,
+                                            child: Text(
+                                              meal['name'],
+                                              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                                fontSize: 20
+                                              ),
                                             ),
                                           ),
                                           const SizedBox(height: 4.0),
                                           Text(
-                                            'Type: ${meal['mealType']}',
-                                            style: TextStyle(
-                                              color: Colors.grey[300],
-                                              fontSize: 12.0,
-                                            ),
+                                            '${userInfo!.children[index-1]['name']}\'s ${meal['mealType']}'
                                           ),
                                         ],
                                       ),

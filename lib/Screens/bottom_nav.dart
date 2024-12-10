@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal/Screens/ideas.dart';
 import 'package:meal/Screens/recipe.dart';
 import 'package:meal/Screens/home.dart';
 import 'package:meal/Screens/shopping_list.dart';
@@ -47,11 +48,11 @@ class _bottomNavState extends State<bottomNav> {
         selectedIndex: selectedIndex,
         barItems: [
           BarItem(
-            icon: Icons.list,
-            title: 'Shopping list',
+            icon: Icons.lightbulb_outline_rounded,
+            title: 'Ideas',
           ),
           BarItem(
-            icon: Icons.home_sharp,
+            icon: Icons.home_outlined,
             title: 'Home',
           ),
           BarItem(
@@ -66,7 +67,7 @@ class _bottomNavState extends State<bottomNav> {
 }
 
 List<Widget> _listOfWidget = <Widget>[
-  const ShoppingList(),
+  const IdeasTab(),
   const MyHomePage(),
   const Recipes(),
 ];

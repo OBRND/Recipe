@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 class AppThemes {
   // Define colors
   static const Color dominantColor = Color(0xFFFFFFFF); // White
-  static const Color secondaryColor = Color(0xFFABABAB); // Silver
-  static const Color accentColor = Color(0xFFFF4500); // International Orange
+  static const Color secondaryColor = Color(0xFFFAEFEB); // Silver
+  static const Color accentColor = Color(0xDBF32607); // International Orange
   static const Color thunderColor = Color(0xFF251D1D); // Thunder
   static const Color flameGray = Color(0xFF6D6A6A); // Flame Gray
   static const Color siennaColor = Color(0xFF6E1903); // Sienna
@@ -15,8 +15,17 @@ class AppThemes {
     brightness: Brightness.light,
     primaryColor: dominantColor,
     scaffoldBackgroundColor: dominantColor,
+    appBarTheme: AppBarTheme(
+      color: dominantColor,
+      surfaceTintColor: accentColor,
+        titleTextStyle: TextStyle(color: thunderColor, fontWeight: FontWeight.bold, fontSize: 18)
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: accentColor,
+    ),
     cardTheme: CardTheme(
-      color: secondaryColor,
+      elevation: 5,
+      color: dominantColor,
       shadowColor: thunderColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
@@ -31,6 +40,10 @@ class AppThemes {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       ),
+    ),
+    iconTheme: IconThemeData(color: thunderColor),
+    tabBarTheme: TabBarTheme(
+      indicatorColor: accentColor
     ),
     textTheme: TextTheme(
       headlineLarge: TextStyle(

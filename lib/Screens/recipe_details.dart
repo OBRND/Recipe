@@ -27,10 +27,22 @@ class RecipeDetailsPage extends StatefulWidget {
   _RecipeDetailsPageState createState() => _RecipeDetailsPageState();
 }
 
-class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
+class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTickerProviderStateMixin{
   Color primaryColor = Colors.white;
   bool pressed = false;
+  late AnimationController _controller;
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialize animation controller
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200), // Short duration for pop effect
+      vsync: this,
+      lowerBound: 1, // Slightly smaller scale
+      upperBound: 1.5, // Slightly larger scale
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,20 +61,25 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> {
           color: Colors.black,
         ),
         actions: [
-          IconButton(
-            onPressed: widget.selected || pressed == true
-                ? null // Disable the button if the recipe is already saved.
-                : () {
-              Write(uid: user.uid).saveRecipe(widget.recipeID);
-              setState(() {
-                pressed = true;
-              });
-            },
-            icon: Icon(
-              pressed || widget.selected ? Icons.favorite : Icons.favorite_border,
-              color: pressed || widget.selected ? Colors.red : Colors.grey,
-            ),
-          )
+        ScaleTransition(
+        scale: _controller,
+        child: IconButton(
+          onPressed: widget.selected || pressed
+              ? null
+              : () async {
+            await _controller.forward();
+            await _controller.reverse();
+            Write(uid: user.uid).saveRecipe(widget.recipeID);
+            setState(() {
+              pressed = true;
+            });
+          },
+          icon: Icon(
+            pressed || widget.selected ? Icons.favorite : Icons.favorite_border,
+            color: pressed || widget.selected ? Colors.red : Colors.grey,
+          ),
+        ),
+      )
         ],
       ),
       body:

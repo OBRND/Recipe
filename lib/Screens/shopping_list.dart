@@ -37,13 +37,7 @@ class _ShoppingListState extends State<ShoppingList> with AutomaticKeepAliveClie
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('This is your shopping List for the week',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w300,
-          color: Colors.white
-        ),),
-        backgroundColor: const Color.fromARGB(169, 126, 3, 3),
+        title: Text('Your groceries for the week',),
       ),
       body: StreamBuilder<DocumentSnapshot?>(
         stream: Shopping(user.uid),
@@ -115,8 +109,13 @@ class _ShoppingListState extends State<ShoppingList> with AutomaticKeepAliveClie
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.add),
-                Text('Add to the shopping list')
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Icon(Icons.add, color: Colors.white),
+                ),
+                Text('Add to the shopping list', style: TextStyle(
+                  color: Colors.white
+                ),)
               ],
             ),
           ),
