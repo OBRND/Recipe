@@ -15,6 +15,7 @@ class ShoppingList extends StatefulWidget {
 }
 
 class _ShoppingListState extends State<ShoppingList> with AutomaticKeepAliveClientMixin{
+  static const Color accentColor = Color(0xDBF32607); // International Orange
   final _ingredientController = TextEditingController();
   final _amountController = TextEditingController();
   String _selectedMeasurement = 'kg';
@@ -73,6 +74,7 @@ class _ShoppingListState extends State<ShoppingList> with AutomaticKeepAliveClie
                 bool isChecked = ingredient['isChecked'] ?? false;
 
                 return ListTile(
+                  horizontalTitleGap: 0,
                   title: Text(
                     " $ingredientName",
                     style: TextStyle(
@@ -92,10 +94,12 @@ class _ShoppingListState extends State<ShoppingList> with AutomaticKeepAliveClie
                     ),
                   ),
                   leading: Checkbox(
+                    splashRadius: 25,
                     value: isChecked,
                     onChanged: (bool? newValue) {
                       write.checkShopping(ingredientName, newValue);
                     },
+                    activeColor: accentColor,
                   ),
                 );
               },

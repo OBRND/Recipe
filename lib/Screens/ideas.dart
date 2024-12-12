@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal/Screens/add_recipe.dart';
 
 class IdeasTab extends StatefulWidget {
   const IdeasTab({super.key});
@@ -8,6 +9,8 @@ class IdeasTab extends StatefulWidget {
 }
 
 class Ideas extends State<IdeasTab> {
+  static const Color accentColor = Color(0xDBF32607); // International Orange
+
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +22,32 @@ class Ideas extends State<IdeasTab> {
           children: [
             sectionTitle("Recommended for You"),
             RecommendedSection(),
-            sectionTitle("Community Picks"),
+            sectionTitle("Community favorites"),
             CommunitySection(),
             sectionTitle("Explore More"),
             ExploreMoreSection(),
           ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: (){
+          Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => AddRecipeScreen()));
+      },
+        label: Container(
+          width: 120,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Icon(Icons.add, color: Colors.white),
+              ),
+              Text('Share recipe', style: TextStyle(
+                  color: Colors.white
+              ),)
+            ],
+          ),
         ),
       ),
     );

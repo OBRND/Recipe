@@ -65,67 +65,67 @@ class _ProfileState extends State<Profile> {
                   // Display and manage children info
                   Card(
                     margin: EdgeInsets.all(8),
-                    child: Column(
-                      children: [
-                        ...widget.info
-                            .asMap()
-                            .entries
-                            .map((entry) {
-                          int index = entry.key;
-                          var child = entry.value;
-                          marker++;
-                          return ListTile(
-                            minVerticalPadding: 5,
-                            horizontalTitleGap: 10,
-                            leading: Container(
-                              width: 8,
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(12),
-                                    bottomLeft: Radius.circular(12)),
-                                color: ChildColorModel.colorOfChild(marker - 1),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Column(
+                        children: [
+                          ...widget.info
+                              .asMap()
+                              .entries
+                              .map((entry) {
+                            int index = entry.key;
+                            var child = entry.value;
+                            marker++;
+                            return ListTile(
+                              minVerticalPadding: 5,
+                              horizontalTitleGap: 0,
+                              leading: Container(
+                                width: 8,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(12),
+                                      bottomLeft: Radius.circular(12)),
+                                  color: ChildColorModel.colorOfChild(marker - 1),
+                                ),
                               ),
-                            ),
-                            title: Text(
-                                '${child['name']} (Age: ${child['age']})',
-                              style: TextStyle(fontSize: 13),
-                            ),
-                            trailing: Row(
+                              title: Text(
+                                  '${child['name']} (Age: ${child['age']})',
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit, size: 20,),
+                                    onPressed: () =>
+                                        _showChildDialog(
+                                            context, childData: child,
+                                            index: index),
+                                  ),
+                                  IconButton(
+                                      icon: Icon(
+                                          Icons.delete_forever,
+                                          size: 25,
+                                          color: Colors.red.shade600),
+                                      onPressed: () =>
+                                          _deleteChild(context, child)
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList() ?? [],
+                          ElevatedButton(
+                            onPressed: () => _showChildDialog(context),
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                IconButton(
-                                  icon: Icon(Icons.edit, size: 20,),
-                                  onPressed: () =>
-                                      _showChildDialog(
-                                          context, childData: child,
-                                          index: index),
-                                ),
-                                IconButton(
-                                    icon: Icon(
-                                        Icons.delete_forever,
-                                        size: 25,
-                                        color: Colors.red.shade600),
-                                    onPressed: () =>
-                                        _deleteChild(context, child)
-                                ),
+                                Icon(Icons.add, color: Colors.white, size: 22,),
+                                Text('Add Child', style: TextStyle(fontSize: 12),),
                               ],
                             ),
-                          );
-                        }).toList() ?? [],
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade300, // Set the button color to grey
                           ),
-                          onPressed: () => _showChildDialog(context),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add, color: Colors.blue.shade700, size: 22,),
-                              Text('Add Child', style: TextStyle(fontSize: 12),),
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
 

@@ -22,6 +22,9 @@ class AppThemes {
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: accentColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(25.0)
+      ),
     ),
     cardTheme: CardTheme(
       elevation: 5,
@@ -36,7 +39,7 @@ class AppThemes {
         backgroundColor: accentColor,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(20),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       ),
@@ -56,6 +59,13 @@ class AppThemes {
         fontSize: 16.0,
       ),
     ),
+    checkboxTheme: CheckboxThemeData(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(7.0),
+      ),
+      checkColor: WidgetStateProperty.all(dominantColor),
+      overlayColor: WidgetStateProperty.all(accentColor),
+    )
   );
 
   // Dark theme (if required, toggleable via settings)

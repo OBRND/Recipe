@@ -48,8 +48,8 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
             icon: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                width: 1.5,
-                  color: Colors.black
+                width: 2,
+                  color: Colors.black.withOpacity(0.7)
               ),
               borderRadius: BorderRadius.circular(30),
             ),
