@@ -9,6 +9,8 @@ class AppThemes {
   static const Color flameGray = Color(0xFF6D6A6A); // Flame Gray
   static const Color siennaColor = Color(0xFF6E1903); // Sienna
   static const Color oldRedColor = Color(0xFF8D1419); // Old Red
+  static const Color greyCustom = Color(0xFFD8D3D3);
+
 
   // Light theme
   static final ThemeData lightTheme = ThemeData(
@@ -65,6 +67,16 @@ class AppThemes {
       ),
       checkColor: WidgetStateProperty.all(dominantColor),
       overlayColor: WidgetStateProperty.all(accentColor),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: secondaryColor,
+      labelStyle: TextStyle(color: oldRedColor),
+      selectedColor: Colors.orange[200],
+      checkmarkColor: accentColor,
+      side: BorderSide(color: greyCustom),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStatePropertyAll(accentColor),
     )
   );
 

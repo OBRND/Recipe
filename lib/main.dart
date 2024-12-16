@@ -13,10 +13,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(
-    ChangeNotifierProvider<ThemeNotifier>(
-      create: (_) => ThemeNotifier(ThemeData.light()),
-      child: MyApp(),
-    ),);
+    MyApp(),);
 }
 
 class MyApp extends StatefulWidget {

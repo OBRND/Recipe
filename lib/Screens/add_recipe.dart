@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meal/Models/decoration.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});
@@ -113,7 +114,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Share Your Recipe'),
-        backgroundColor: Colors.white,
         elevation: 1,
       ),
       body: Container(
@@ -152,7 +152,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                               : null,
                         ),
                         child: _imagePath == null
-                            ? Column(
+                            ?
+                        Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.camera_alt,
@@ -173,18 +174,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _nameController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
+                    decoration: textinputdecoration.copyWith(
                       hintText: 'Enter recipe name',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
                     ),
                     validator: (value) =>
                     value?.isEmpty ?? true ? 'Enter recipe name' : null,
@@ -196,15 +187,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
+                    decoration: boxDecoration,
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _selectedMealType,
                         isExpanded: true,
+                        dropdownColor: Color(0xfff6efef),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
                         items: _mealTypes.map((String type) {
                           return DropdownMenuItem<String>(
                             value: type,
@@ -222,7 +211,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   const SizedBox(height: 24),
 
                   // Tags
-
                   _buildRequiredLabel('Tags'),
                   const SizedBox(height: 8),
                   Wrap(
@@ -234,15 +222,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                         selected: isSelected,
                         onSelected: (bool selected) {
                           setState(() {
-                            if (selected) {
+                            if (selected && _selectedTags.length < 3) {
                               _selectedTags.add(tag);
                             } else {
                               _selectedTags.remove(tag);
                             }
                           });
                         },
-                        selectedColor: Colors.orange[100],
-                        checkmarkColor: Colors.orange[700],
                       );
                     }).toList(),
                   ),
@@ -251,7 +237,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   // Dietary Preferences Section
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -267,7 +253,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                     _includeDietaryPreferences = value;
                                   });
                                 },
-                                activeColor: Colors.orange,
+                                activeColor: Color(0xDBF32607),
                               ),
                             ],
                           ),
@@ -284,15 +270,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                   selected: isSelected,
                                   onSelected: (bool selected) {
                                     setState(() {
-                                      if (selected) {
+                                      if (selected && _selectedDietaryPreferences.length < 3) {
                                         _selectedDietaryPreferences.add(pref);
                                       } else {
                                         _selectedDietaryPreferences.remove(pref);
                                       }
                                     });
                                   },
-                                  selectedColor: Colors.orange[100],
-                                  checkmarkColor: Colors.orange[700],
                                 );
                               }).toList(),
                             ),
@@ -311,7 +295,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Row(
                           children: [
                             Expanded(
@@ -354,6 +338,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                 ),
                                 onChanged: (value) =>
                                 _ingredients[index]['unit'] = value,
+                                validator: (value) => value?.isEmpty ?? true
+                                    ? 'Enter Unit'
+                                    : null,
                               ),
                             ),
                           ],
