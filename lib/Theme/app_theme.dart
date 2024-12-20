@@ -14,6 +14,7 @@ class AppThemes {
 
   // Light theme
   static final ThemeData lightTheme = ThemeData(
+    unselectedWidgetColor: secondaryColor,
     brightness: Brightness.light,
     primaryColor: dominantColor,
     scaffoldBackgroundColor: dominantColor,
@@ -61,6 +62,12 @@ class AppThemes {
         fontSize: 16.0,
       ),
     ),
+    textButtonTheme: const TextButtonThemeData(
+      style: ButtonStyle(
+        iconColor: WidgetStatePropertyAll(accentColor),
+        textStyle: WidgetStatePropertyAll(TextStyle(color: accentColor))
+      )
+    ),
     checkboxTheme: CheckboxThemeData(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(7.0),
@@ -77,7 +84,7 @@ class AppThemes {
     ),
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStatePropertyAll(accentColor),
-    )
+    ),
   );
 
   // Dark theme (if required, toggleable via settings)

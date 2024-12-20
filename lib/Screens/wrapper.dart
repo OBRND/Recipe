@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:meal/Auth/sign_in.dart';
-import 'package:meal/Screens/Home.dart';
 import 'package:provider/provider.dart';
 
 import '../DataBase/state_mgt.dart';

@@ -9,6 +9,7 @@ class Write{
   final CollectionReference user = FirebaseFirestore.instance.collection('Users');
   final CollectionReference Schedule = FirebaseFirestore.instance.collection('Schedule');
   final CollectionReference Shopping = FirebaseFirestore.instance.collection('Shopping_list');
+  final CollectionReference Recipe = FirebaseFirestore.instance.collection('Recipes');
 
   Future addUser(String firstname, String email) async{
     List<Map<String, dynamic>> childInfo = [
@@ -340,13 +341,39 @@ class Write{
   }
 
   Future addShoppingList(ingredientName, newValue) async{
-    return FirebaseFirestore.instance
-        .collection('Shopping_list')
+    return Shopping
         .doc(uid)
         .update({
       'ingredients.$ingredientName': newValue,
     });
   }
 
+
+  Future<void> saveRecipeDetails({
+    required String title,
+    required String cookingTime,
+    required Set tags,
+    required List ingredients,
+    required List procedure,
+    required String imageUrl,
+    required String mealType,
+    required Set<String> selectedPreferences,
+    calories,
+    videoUrl
+  }) async {
+    try {
+      await Recipe.doc('community').set({
+        'title': title,
+        'ingredients': ingredients,
+        'procedure': procedure,
+        'imageUrl': imageUrl,
+        'contributor': uid,
+        'timestamp': FieldValue.serverTimestamp(), // Optional: For sorting by time
+      });
+      print('Recipe saved successfully!');
+    } catch (e) {
+      print('Error saving recipe: $e');
+    }
+  }
 
 }

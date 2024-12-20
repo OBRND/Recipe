@@ -1,5 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:meal/Models/decoration.dart';
+import 'package:provider/provider.dart';
+import '../DataBase/storage.dart';
+import '../DataBase/write_db.dart';
+import '../Models/user_id.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});
@@ -9,20 +15,20 @@ class AddRecipeScreen extends StatefulWidget {
 }
 
 class _AddRecipeScreenState extends State<AddRecipeScreen> {
+
   final _formKey = GlobalKey<FormState>();
   final List<Map<String, dynamic>> _ingredients = [];
-  final List<String> _procedures = [''];
+  final List<String> _procedures = ['', '', ''];
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _cookingTimeController = TextEditingController();
   final TextEditingController _videoLinkController = TextEditingController();
   final TextEditingController _caloriesController = TextEditingController();
   final Set<String> _selectedTags = {};
   String _selectedMealType = 'Dinner';
-  final Set<String> _selectedDietaryPreferences = {};
-
-  String? _imagePath;
+  final Set<String> _selectedPreferences = {};
+  File? _selectedImage;
   bool _includeCalories = false;
-  bool _includeDietaryPreferences = false;
+  bool _includePreferences = false;
 
   // Predefined lists
   final List<String> _mealTypes = [
@@ -69,19 +75,76 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   }
 
   void _saveForm() {
+    String? errorMessage;
+
+    if (_selectedTags.isEmpty) {
+      errorMessage = 'Pick at least 1 tag that applies in the tags section.';
+    } else if (_includePreferences && _selectedPreferences.isEmpty) {
+      errorMessage = 'Pick at least 1 dietary preference.';
+    }
+
     if (_formKey.currentState!.validate()) {
+      if (_ingredients.isEmpty || _ingredients.length < 3) {
+        errorMessage = 'Please add at least three ingredient.';
+      }
+      if (_procedures.isEmpty || _procedures.every((step) =>
+      step
+          .trim()
+          .isEmpty || _procedures.length < 3)) {
+        errorMessage = 'Please add at least a three step procedure.';
+      }
+
+      if (errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+        );
+        return; // Stop form submission
+      }
+
+      submitRecipe();
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recipe submitted successfully!')),
+        SnackBar(
+          backgroundColor: Colors.grey[300],
+            content: const Row(
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Icon(Icons.check, color: Colors.green,),
+                ),
+                Text('Recipe submitted successfully!'),
+              ],
+            )),
       );
       Navigator.pop(context);
     }
   }
 
+
   Future<void> _pickImage() async {
-    // Implement image picker here
-    setState(() {
-      _imagePath = "path/to/image";
-    });
+    final ImagePicker _picker = ImagePicker();
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        // imageQuality: 80, // Compress the image to 80% quality
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path); // Convert XFile to File
+        });
+      } else {
+        // User canceled the picker
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No image selected.')),
+        );
+      }
+    } catch (e) {
+      // Error handling
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick image: $e')),
+      );
+    }
   }
 
   Widget _buildRequiredLabel(String label) {
@@ -99,7 +162,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           TextSpan(
             text: ' *',
             style: TextStyle(
-              color: Colors.orange[700],
+              color: Colors.red,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
@@ -144,16 +207,10 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                               blurRadius: 5,
                             ),
                           ],
-                          image: _imagePath != null
-                              ? DecorationImage(
-                            image: AssetImage(_imagePath!),
-                            fit: BoxFit.cover,
-                          )
-                              : null,
                         ),
-                        child: _imagePath == null
+                        child: _selectedImage == null
                             ?
-                        Column(
+                        Column (
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.camera_alt,
@@ -163,7 +220,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                 style: TextStyle(color: Colors.grey[400])),
                           ],
                         )
-                            : null,
+                            : _selectedImage != null
+                            ? Image.file(
+                          _selectedImage!,
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.fill,
+                        )
+                            : const Text('No image selected'),
                       ),
                     ),
                   ),
@@ -186,7 +250,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   _buildRequiredLabel('Meal Type'),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: boxDecoration,
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
@@ -221,6 +285,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                         label: Text(tag),
                         selected: isSelected,
                         onSelected: (bool selected) {
+
                           setState(() {
                             if (selected && _selectedTags.length < 3) {
                               _selectedTags.add(tag);
@@ -242,38 +307,39 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text('Include Dietary Preferences?',
                                   style: TextStyle(fontSize: 16)),
                               const SizedBox(width: 16),
                               Switch(
-                                value: _includeDietaryPreferences,
+                                value: _includePreferences,
                                 onChanged: (value) {
                                   setState(() {
-                                    _includeDietaryPreferences = value;
+                                    _includePreferences = value;
                                   });
                                 },
                                 activeColor: Color(0xDBF32607),
                               ),
                             ],
                           ),
-                          if (_includeDietaryPreferences) ...[
+                          if (_includePreferences) ...[
                             const SizedBox(height: 16),
                             Wrap(
                               spacing: 8,
                               runSpacing: 8,
                               children: _dietaryPreferences.map((pref) {
                                 final isSelected =
-                                _selectedDietaryPreferences.contains(pref);
+                                _selectedPreferences.contains(pref);
                                 return FilterChip(
                                   label: Text(pref),
                                   selected: isSelected,
                                   onSelected: (bool selected) {
                                     setState(() {
-                                      if (selected && _selectedDietaryPreferences.length < 3) {
-                                        _selectedDietaryPreferences.add(pref);
+                                      if (selected && _selectedPreferences.length < 3) {
+                                        _selectedPreferences.add(pref);
                                       } else {
-                                        _selectedDietaryPreferences.remove(pref);
+                                        _selectedPreferences.remove(pref);
                                       }
                                     });
                                   },
@@ -290,12 +356,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   // Ingredients
                   _buildRequiredLabel('Ingredients'),
                   const SizedBox(height: 8),
-                  ..._ingredients.map((ingredient) {
-                    int index = _ingredients.indexOf(ingredient);
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: Column(
+                      children: [
+                        ..._ingredients.map((ingredient) {
+                      int index = _ingredients.indexOf(ingredient);
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal:  8.0),
                         child: Row(
                           children: [
                             Expanded(
@@ -343,16 +411,24 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                     : null,
                               ),
                             ),
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle, color: Colors.red),
+                              onPressed: () {
+                                _ingredients.removeAt(index);
+                                setState(() {});
+                              },
+                            ),
                           ],
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                      ]
+                    ),
+                  ),
                   TextButton.icon(
                     onPressed: _addIngredient,
-                    icon: const Icon(Icons.add, color: Colors.orange),
-                    label: const Text('Add Ingredient',
-                        style: TextStyle(color: Colors.orange)),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Ingredient', style: TextStyle(color: Color(0xDBF32607))),
                   ),
                   const SizedBox(height: 24),
 
@@ -361,17 +437,19 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   const SizedBox(height: 8),
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
                       child: Column(
                         children: _procedures.asMap().entries.map((entry) {
                           int index = entry.key;
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: TextFormField(
-                                    decoration: InputDecoration(hintText: 'Step ${index + 1}', filled: true),
+                                    decoration: textinputdecoration.copyWith(
+                                      hintText: 'Step ${index + 1}'
+                                    ),
                                     onChanged: (value) => _procedures[index] = value,
                                     validator: (value) => value?.isEmpty ?? true ? 'Enter step ${index + 1}' : null,
                                     maxLines: 2,
@@ -393,9 +471,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   ),
                   TextButton.icon(
                     onPressed: _addProcedureStep,
-                    icon: const Icon(Icons.add, color: Colors.orange),
+                    icon: const Icon(Icons.add,),
                     label: const Text('Add Step',
-                        style: TextStyle(color: Colors.orange)),
+                        style: TextStyle(color: Color(0xDBF32607))),
                   ),
                   const SizedBox(height: 24),
 
@@ -404,18 +482,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _cookingTimeController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: 'Enter cooking time in minutes',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
+                    decoration:  textinputdecoration.copyWith(
+                      hintText: 'Enter cooking time in minutes'
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) =>
@@ -426,11 +494,12 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   // Calories Section
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text('Include Calories?',
                                   style: TextStyle(fontSize: 16)),
@@ -441,23 +510,26 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                                   setState(() {
                                     _includeCalories = value;
                                   });
+                                  print(_ingredients);
+                                  print(_procedures);
                                 },
-                                activeColor: Colors.orange,
+                                activeColor: Color(0xDBF32607),
                               ),
                             ],
                           ),
                           if (_includeCalories) ...[
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                             TextFormField(
                               controller: _caloriesController,
-                              decoration: InputDecoration(
-                                labelText: 'Calories per serving',
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                              decoration: textinputdecoration.copyWith(
+                                labelText: 'Calories',
                               ),
+                              validator: (value) {
+                                if (_includeCalories && _caloriesController.text.isEmpty) {
+                                  return 'Enter a value for calories';
+                                }
+                                return null;
+                              },
                               keyboardType: TextInputType.number,
                             ),
                           ],
@@ -478,18 +550,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _videoLinkController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: 'Enter video URL',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
+                    decoration: textinputdecoration.copyWith(
+                      hintText: 'Video Link',
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -498,19 +560,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   Center(
                     child: ElevatedButton(
                       onPressed: _saveForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 48, vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        'Submit Recipe',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      child: const Text('Submit Recipe'),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -522,4 +572,56 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       ),
     );
   }
+
+  void submitRecipe() async {
+    final user = Provider.of<UserID>(context, listen: false);
+    Write write = Write(uid: user.uid);
+    print('-----------Here------------------');
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an image!')),
+      );
+      return;
+    }
+
+    try {
+      final imageUrl = await uploadImage(_selectedImage!);
+      if (imageUrl == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Image upload failed!')),
+        );
+        return;
+      }
+
+      // Step 2: Save recipe details to Firestore
+      await write.saveRecipeDetails(
+        title: _nameController.text,
+        ingredients: _ingredients,
+        procedure: _procedures,
+        tags: _selectedTags,
+        imageUrl: imageUrl,
+        mealType: _selectedMealType,
+        selectedPreferences: _selectedPreferences,
+        cookingTime: _cookingTimeController.text
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Recipe uploaded successfully!')),
+      );
+
+      setState(() {
+        _selectedImage = null;
+        _nameController.clear();
+        _cookingTimeController.clear();
+        _videoLinkController.clear();
+        _caloriesController.clear();
+      });
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to upload recipe: $e')),
+      );
+    }
+  }
+
 }
