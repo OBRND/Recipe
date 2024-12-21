@@ -595,14 +595,16 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
       // Step 2: Save recipe details to Firestore
       await write.saveRecipeDetails(
-        title: _nameController.text,
+        name: _nameController.text,
         ingredients: _ingredients,
         procedure: _procedures,
         tags: _selectedTags,
         imageUrl: imageUrl,
         mealType: _selectedMealType,
-        selectedPreferences: _selectedPreferences,
-        cookingTime: _cookingTimeController.text
+        cookingTime: _cookingTimeController.text,
+        selectedPreferences:  _includePreferences == true ? _selectedPreferences: null,
+        calories:  _includeCalories == true ? _caloriesController.text: null,
+        videoUrl: _videoLinkController.text.isNotEmpty ?  _videoLinkController.text : null
       );
 
       ScaffoldMessenger.of(context).showSnackBar(

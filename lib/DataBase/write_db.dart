@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meal/DataBase/fetch_db.dart';
+import 'dart:math';
+import 'package:intl/intl.dart';
 
 class Write{
 
@@ -350,30 +352,44 @@ class Write{
 
 
   Future<void> saveRecipeDetails({
-    required String title,
+    required String name,
     required String cookingTime,
     required Set tags,
     required List ingredients,
     required List procedure,
     required String imageUrl,
     required String mealType,
-    required Set<String> selectedPreferences,
-    calories,
-    videoUrl
+    Set<String>? selectedPreferences,
+    String? calories,
+    String? videoUrl
   }) async {
+    String recipeId = generateCode();
     try {
-      await Recipe.doc('community').set({
-        'title': title,
+      await Recipe.doc(recipeId).set({
+        'name': name,
+        'mealType' : mealType,
+        'cookingTime' : cookingTime,
+        'tags' : tags,
         'ingredients': ingredients,
         'procedure': procedure,
         'imageUrl': imageUrl,
         'contributor': uid,
-        'timestamp': FieldValue.serverTimestamp(), // Optional: For sorting by time
+        'timestamp': FieldValue.serverTimestamp(),
+        'preferences' : selectedPreferences,
+        'calories' : calories,
+        'videoUrl' : videoUrl
       });
       print('Recipe saved successfully!');
     } catch (e) {
       print('Error saving recipe: $e');
     }
+  }
+
+  String generateCode() {
+    String datePart = DateFormat('ddMM').format(DateTime.now());
+    String randomPart = Random().nextInt(1000).toString().padLeft(3, '0');
+
+    return 'C$datePart$randomPart';
   }
 
 }

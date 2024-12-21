@@ -176,35 +176,42 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
                 weeklyPlan.forEach((dayData) {
                   final mealsForDay = dayData["$selected"] as List<dynamic>;
-                  final mealsOfType = mealsForDay.where((meal) => meal['mealType']  == mealType.toLowerCase()).toList();
+                  final mealsOfType = mealsForDay.where((meal) =>
+                  meal['mealType'] == mealType.toLowerCase())
+                      .toList();
 
                   mealsOfType.forEach((meal) {
                     index ++;
                     mealWidgets.add(
                         Dismissible(
-                          key: UniqueKey(), // Each Dismissible widget needs a unique key
-                          direction: DismissDirection.endToStart, // Specify swipe direction
+                          key: UniqueKey(),
+                          // Each Dismissible widget needs a unique key
+                          direction: DismissDirection.endToStart,
+                          // Specify swipe direction
                           onDismissed: (direction) {
                             print('---------');
                             print(weeklyPlan.indexOf(dayData));
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (BuildContext context) => RecipeList(
-                                  recipes: weeklyPlan,
-                                  userData: userInfo, swap: true,
-                                  index: mealType == 'breakfast' ? 0 :
-                                  mealType == 'lunch' ? 1 :
-                                  mealType == 'dinner' ? 2 : 3,
-                                  meal: meal,
-                                  day: selected,
-                                  child: weeklyPlan.indexOf(dayData),
-                                  name: ageGroups
-                                  )),
+                                  builder: (BuildContext context) =>
+                                      RecipeList(
+                                          recipes: weeklyPlan,
+                                          userData: userInfo,
+                                          swap: true,
+                                          index: mealType == 'breakfast' ? 0 :
+                                          mealType == 'lunch' ? 1 :
+                                          mealType == 'dinner' ? 2 : 3,
+                                          meal: meal,
+                                          day: selected,
+                                          child: weeklyPlan.indexOf(dayData),
+                                          name: ageGroups
+                                      )),
                             );
                           },
                           background: Container(
                             color: Colors.blue, // Background color when swiped
-                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0),
                             alignment: Alignment.centerRight,
                             child: const Icon(
                               Icons.swap_horiz,
@@ -216,77 +223,124 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (BuildContext context) => Consumer<UserDataModel?>(
-                                    builder: (context, userData, child) {
-                                      return RecipeDetailsPage(
-                                        recipeID: meal['id'],
-                                        imageURL:
-                                        'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
-                                        foodName: meal['name'],
-                                        ingredients: meal['ingredients'],
-                                        selected: userData?.savedRecipes.contains(meal['id']) ?? false,
-                                      );
-                                    },
-                                  ),
+                                  builder: (BuildContext context) =>
+                                      Consumer<UserDataModel?>(
+                                        builder: (context, userData, child) {
+                                          return RecipeDetailsPage(
+                                            recipeID: meal['id'],
+                                            imageURL:
+                                            'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
+                                            foodName: meal['name'],
+                                            ingredients: meal['ingredients'],
+                                            selected: userData?.savedRecipes
+                                                .contains(meal['id']) ?? false,
+                                          );
+                                        },
+                                      ),
                                 ),
                               );
                             },
                             child: Container(
-                              height: 200,
-                              margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                              height: MediaQuery.sizeOf(context).width / 2.8,
+                              margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2),
                               child: Card(
-                                // color: Color.fromARGB(255, 101, 77, 74),
+                                elevation: 5,
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Stack(
                                         children: [
-                                          Container(
-                                            width: MediaQuery.sizeOf(context).width/1.9,
-                                            decoration: const BoxDecoration(
-                                              borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(12),
-                                                  bottomLeft: Radius.circular(12),
-                                                topRight: Radius.circular(5),
-                                                bottomRight: Radius.circular(5)
-                                              ),
-                                              image: DecorationImage(
-                                                fit: BoxFit.fitWidth,
-                                                image: NetworkImage(
-                                                    'https://www.onehappydish.com/wp-content/uploads/2023/11/scrambled-eggs-with-cream-cheese-recipe.jpg'),
+                                          Card(
+                                            elevation: 5,
+                                            margin: EdgeInsets.all(0),
+                                            child: Container(
+                                              width: MediaQuery
+                                                  .sizeOf(context)
+                                                  .width / 2.8,
+                                              decoration: const BoxDecoration(
+                                                borderRadius: BorderRadius.all(Radius.circular(
+                                                    12)),
+                                                image: DecorationImage(
+                                                  fit: BoxFit.fitWidth,
+                                                  image: NetworkImage(
+                                                      'https://www.onehappydish.com/wp-content/uploads/2023/11/scrambled-eggs-with-cream-cheese-recipe.jpg'),
+                                                ),
                                               ),
                                             ),
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: Container(
-                                              width: 15,
-                                              height: 15,
-                                              decoration: BoxDecoration(
-                                                borderRadius: const BorderRadius.all(Radius.circular(12)),
-                                                color: ChildColorModel.colorOfChild(index - 1),
+                                          Container(
+                                            width: 50,
+                                            height: 25,
+                                            child: Center(
+                                              child: Text(
+                                                  '${userInfo!.children[index - 1]['name']}',
+                                                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                                               ),
+                                            ),
+                                            decoration: BoxDecoration(
+                                              borderRadius: const BorderRadius.only(bottomRight: Radius.circular(15),
+                                                topLeft:  Radius.circular(12),
+                                              ),
+                                              color: ChildColorModel.colorOfChild(index - 1).withOpacity(.8),
                                             ),
                                           ),
                                         ]
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.all(8.0),
+                                      padding: const EdgeInsets.all(15.0),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .start,
                                         children: [
                                           Container(
-                                            width: MediaQuery.sizeOf(context).width/3,
+                                            width: MediaQuery
+                                                .sizeOf(context)
+                                                .width / 3,
                                             child: Text(
                                               meal['name'],
-                                              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                                fontSize: 20
+                                              style: Theme
+                                                  .of(context)
+                                                  .textTheme
+                                                  .headlineLarge
+                                                  ?.copyWith(
+                                                  fontSize: 16
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(height: 4.0),
+                                          const SizedBox(height: 4),
                                           Text(
-                                            '${userInfo!.children[index-1]['name']}\'s ${meal['mealType']}'
+                                            'Perfect for family dinner',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.star, size: 16,
+                                                  color: Colors.orange[700]),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '4.8',
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Icon(Icons.timer_outlined,
+                                                  size: 16,
+                                                  color: Colors.grey[600]),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '45 min',
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
@@ -298,8 +352,10 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                           ),
                         )
                     );
-                  });
-                });
+                  }
+                  );
+                }
+                );
 
                 // Only display the meal type if there are meals under it
                 return mealWidgets.isNotEmpty
