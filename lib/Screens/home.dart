@@ -209,45 +209,118 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                             );
                           },
                           background: Container(
-                            color: Colors.blue, // Background color when swiped
+                            color: Colors.white, // Background color when swiped
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20.0),
                             alignment: Alignment.centerRight,
                             child: const Icon(
                               Icons.swap_horiz,
-                              color: Colors.white,
+                              color: Colors.orange,
                               size: 32,
                             ),
                           ),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      Consumer<UserDataModel?>(
-                                        builder: (context, userData, child) {
-                                          return RecipeDetailsPage(
-                                            recipeID: meal['id'],
-                                            imageURL:
-                                            'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
-                                            foodName: meal['name'],
-                                            ingredients: meal['ingredients'],
-                                            selected: userData?.savedRecipes
-                                                .contains(meal['id']) ?? false,
-                                          );
-                                        },
-                                      ),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              height: MediaQuery.sizeOf(context).width / 2.8,
-                              margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2),
-                              child: Card(
-                                elevation: 5,
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2.0),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        Consumer<UserDataModel?>(
+                                          builder: (context, userData, child) {
+                                            return RecipeDetailsPage(
+                                              recipeID: meal['id'],
+                                              imageURL:
+                                              'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
+                                              foodName: meal['name'],
+                                              ingredients: meal['ingredients'],
+                                              selected: userData?.savedRecipes
+                                                  .contains(meal['id']) ?? false,
+                                            );
+                                          },
+                                        ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                height: MediaQuery.sizeOf(context).width / 2.8,
+                                margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                                child: Stack(
                                   children: [
+                                    Container(
+                                    height: MediaQuery.sizeOf(context).width / 3.2,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Color(0xe7f8f3f1),
+                                          borderRadius: BorderRadius.circular(12.0),
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 1
+                                          )
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              width: MediaQuery.sizeOf(context).width / 3,
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(15.0),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment
+                                                    .start,
+                                                children: [
+                                                  Text(
+                                                    meal['name'],
+                                                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                                        fontSize: 16
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    'Perfect for family dinner',
+                                                    style: TextStyle(
+                                                      color: Colors.grey[600],
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.star, size: 16,
+                                                          color: Colors.orange[700]),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        '4.8',
+                                                        style: TextStyle(
+                                                          color: Colors.grey[600],
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 16),
+                                                      Icon(Icons.timer_outlined,
+                                                          size: 16,
+                                                          color: Colors.grey[600]),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        '45 min',
+                                                        style: TextStyle(
+                                                          color: Colors.grey[600],
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                                                      ),
                                     Stack(
                                         children: [
                                           Card(
@@ -273,7 +346,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                                             height: 25,
                                             child: Center(
                                               child: Text(
-                                                  '${userInfo!.children[index - 1]['name']}',
+                                                '${userInfo!.children[index - 1]['name']}',
                                                 style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                                               ),
                                             ),
@@ -286,66 +359,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                                           ),
                                         ]
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(15.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .start,
-                                        children: [
-                                          Container(
-                                            width: MediaQuery
-                                                .sizeOf(context)
-                                                .width / 3,
-                                            child: Text(
-                                              meal['name'],
-                                              style: Theme
-                                                  .of(context)
-                                                  .textTheme
-                                                  .headlineLarge
-                                                  ?.copyWith(
-                                                  fontSize: 16
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Perfect for family dinner',
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.star, size: 16,
-                                                  color: Colors.orange[700]),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                '4.8',
-                                                style: TextStyle(
-                                                  color: Colors.grey[600],
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 16),
-                                              Icon(Icons.timer_outlined,
-                                                  size: 16,
-                                                  color: Colors.grey[600]),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                '45 min',
-                                                style: TextStyle(
-                                                  color: Colors.grey[600],
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                  ]
                                 ),
                               ),
                             ),

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:meal/Models/user_id.dart';
 import 'package:meal/Screens/add_recipe.dart';
+import 'package:provider/provider.dart';
+
+import 'new_recipes.dart';
 
 class IdeasTab extends StatefulWidget {
   const IdeasTab({super.key});
@@ -330,12 +334,80 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
         },
         child: Container(
           height: MediaQuery.sizeOf(context).width / 2.8,
-          margin: const EdgeInsets.symmetric(vertical: 2.0),
-          child: Card(
-            elevation: 5,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          child: Stack(
               children: [
+                Container(
+                  height: MediaQuery.sizeOf(context).width / 3.2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: Color(0xe7f8f3f1),
+                        borderRadius: BorderRadius.circular(12.0),
+                        border: Border.all(
+                            color: Colors.white,
+                            width: 3
+                        )
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: MediaQuery.sizeOf(context).width / 3,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment
+                                .start,
+                            children: [
+                              Text(
+                                meal['name'],
+                                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                    fontSize: 16
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Perfect for family dinner',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(Icons.star, size: 16,
+                                      color: Colors.orange[700]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '4.8',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Icon(Icons.timer_outlined,
+                                      size: 16,
+                                      color: Colors.grey[600]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '45 min',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 Card(
                   elevation: 5,
                   margin: EdgeInsets.all(0),
@@ -354,67 +426,7 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment
-                        .start,
-                    children: [
-                      Container(
-                        width: MediaQuery
-                            .sizeOf(context)
-                            .width / 3,
-                        child: Text(
-                          meal['name'],
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .headlineLarge
-                              ?.copyWith(
-                              fontSize: 16
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Perfect for family dinner',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(Icons.star, size: 16,
-                              color: Colors.orange[700]),
-                          const SizedBox(width: 4),
-                          Text(
-                            '4.8',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Icon(Icons.timer_outlined,
-                              size: 16,
-                              color: Colors.grey[600]),
-                          const SizedBox(width: 4),
-                          Text(
-                            '45 min',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ]
           ),
         ),
       );
@@ -428,7 +440,9 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
   }
 
   Widget _buildNewAndTrendingTab() {
-    return const Center(child: Text('New & Trending'));
+    final user = Provider.of<UserID>(context);
+
+    return Center(child: NewRecipes(uid: user.uid));
   }
 
   Widget _buildKidFriendlyTab() {

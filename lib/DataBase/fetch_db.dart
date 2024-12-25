@@ -234,6 +234,25 @@ class Fetch{
     return multiplePlan;
   }
 
+ Future<List<Map<String, dynamic>>> newRecipes() async {
+
+   final communityDoc = await Recipe.doc('community').get();
+   List<Map<String, dynamic>> fetchedRecipes = [];
+   List recipeRefs = communityDoc['new'] ?? [];
+
+     for (var ref in recipeRefs) {
+       var recipeSnapshot = await ref.get();
+       if (recipeSnapshot.exists) {
+         fetchedRecipes.add({
+           'name': recipeSnapshot['name'],
+           'imageUrl': recipeSnapshot['imageUrl'],
+           'cookingTime': recipeSnapshot['cookingTime']
+         });
+       }
+     }
+   return fetchedRecipes;
+ }
+
   Future<Map<String, dynamic>> shoppingList() async{
     DocumentSnapshot publicScheduleSnapshot = await Shopping.doc(uid).get();
     print({'Shoppping list:' + publicScheduleSnapshot['ingredients'].toString()});
