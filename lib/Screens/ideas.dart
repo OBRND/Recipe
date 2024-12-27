@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:meal/Models/decoration.dart';
 import 'package:meal/Models/user_id.dart';
 import 'package:meal/Screens/add_recipe.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +22,7 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
   bool _showFloatingButton = true;
-  static const Color accentColor = Color(0xDBF32607); // International Orange
+  static const Color accentColor = Color(0xDBF32607);
 
   @override
   void initState() {
@@ -54,7 +55,6 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       body: NestedScrollView(
         controller: _scrollController,
         headerSliverBuilder: (context, innerBoxIsScrolled) =>
@@ -340,14 +340,7 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
                 Container(
                   height: MediaQuery.sizeOf(context).width / 3.2,
                   child: Container(
-                    decoration: BoxDecoration(
-                        color: Color(0xe7f8f3f1),
-                        borderRadius: BorderRadius.circular(12.0),
-                        border: Border.all(
-                            color: Colors.white,
-                            width: 3
-                        )
-                    ),
+                    decoration: boxDecoration,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

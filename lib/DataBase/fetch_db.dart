@@ -99,7 +99,7 @@ class Fetch{
 
     List<String> mealTypes = ['breakfast', 'main dish', 'dessert', 'snack'];
 
-    if (index < 0 || index >= mealTypes.length) {
+    if (index < 0 || index > mealTypes.length) {
       print('Invalid index. Please provide a value between 0 and ${mealTypes
           .length - 1}.');
       return [];
@@ -113,6 +113,8 @@ class Fetch{
           selectedMealType;
     }).toList();
     print(filteredRecipes);
+    print("-=-=-=OK=-=-=-");
+
     return filteredRecipes;
   }
 
@@ -124,11 +126,13 @@ class Fetch{
       int cal = recipe['cal'];
       // String decription = recipe['discription'];
       List ingredients = recipe['ingredients'];
+      String cookingTime = recipe['cookingTime'];
 
     return {
       'name': name,
       'cal': cal,
-      'ingredients': ingredients
+      'ingredients': ingredients,
+      'cookingTime': cookingTime
     };
   }
 
@@ -148,7 +152,8 @@ class Fetch{
          'id': id,
          'name': recipeDetails['name'],
          'cal': recipeDetails['cal'],
-         'ingredients': recipeDetails['ingredients']
+         'ingredients': recipeDetails['ingredients'],
+         'cookingTime': recipeDetails['cookingTime']
        };
      }).toList(),
    );

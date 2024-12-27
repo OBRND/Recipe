@@ -379,10 +379,37 @@ class Write{
         'calories' : calories,
         'videoUrl' : videoUrl
       });
+      await newRecipeUpdate(recipeId);
       print('Recipe saved successfully!');
     } catch (e) {
       print('Error saving recipe: $e');
     }
+  }
+
+  Future<void> newRecipeUpdate(String recipeId) async {
+    final recipeRef = Recipe.doc(recipeId);
+    final communityRef = FirebaseFirestore.instance.collection('Recipes').doc('community');
+
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final communityDoc = await transaction.get(communityRef);
+
+      // Get the 'new' array from the community document
+      List<dynamic> currentRecipes = communityDoc.data()?['new'] ?? [];
+
+      // Append the new recipe reference
+      currentRecipes.add(recipeRef);
+
+      // If more than 10, remove the oldest one
+      if (currentRecipes.length > 10) {
+        currentRecipes.removeAt(0);
+      }
+
+      // Update the document with the trimmed list
+      transaction.update(communityRef, {
+        'new': currentRecipes,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+    });
   }
 
   String generateCode() {

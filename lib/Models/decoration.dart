@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const Color greyCustom = Color(0xFFD8D3D3);
+const Color greyCustom = Colors.white;
 
 const textinputdecoration = InputDecoration(
   fillColor: Colors.white,
@@ -16,7 +16,7 @@ const textinputdecoration = InputDecoration(
 );
 
 BoxDecoration boxDecoration = BoxDecoration(
-  color: Colors.white,
+  color: Color(0xe7f8f3f1),
   borderRadius: BorderRadius.circular(12),
   border: Border.all(color: greyCustom),
 );

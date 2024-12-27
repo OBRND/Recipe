@@ -52,8 +52,7 @@ class _RecipeListState extends State<RecipeList> {
     if (widget.swap && widget.index != null) {
       _fetchRecipes(user.uid, widget.index);
     }
-    List<Map<String, dynamic>> filteredRecipes = widget.recipes
-        .where((recipe) =>
+    List<Map<String, dynamic>> filteredRecipes = widget.recipes.where((recipe) =>
     recipe['name'].toLowerCase().contains(searchQuery.toLowerCase()) &&
         (selectedFilter == 'All' ||
             (selectedFilter == 'Gluten-Free' && recipe['isGlutenFree']) ||
@@ -120,8 +119,7 @@ class _RecipeListState extends State<RecipeList> {
                 itemBuilder: (context, index) =>
                     InkWell(
                       onTap: () {
-                        write.updateRecent(
-                            filteredRecipes[index]['id']);
+                        write.updateRecent(filteredRecipes[index]['id']);
                         print(filteredRecipes[index]);
                         widget.swap == true ? _showSwapDialog(context, filteredRecipes, index,
                               () {
