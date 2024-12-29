@@ -4,8 +4,8 @@ import 'package:meal/Models/user_data.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 
-import '../DataBase/fetch_db.dart';
-import '../Models/user_id.dart';
+import '../../DataBase/fetch_db.dart';
+import '../../Models/user_id.dart';
 
 class RecipeDetailsPage extends StatefulWidget {
   final String imageURL;

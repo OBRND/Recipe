@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:provider/provider.dart';
-import '../Screens/recipe_details.dart';
+import '../Screens/recipes/recipe_details.dart';
 import 'color_model.dart';
 import 'decoration.dart';
 
@@ -23,7 +23,7 @@ class MealCard extends StatelessWidget {
             builder: (BuildContext context) =>
                     RecipeDetailsPage(
                       recipeID: meal['id'],
-                      imageURL: 'https://img.jamieoliver.com/jamieoliver/recipe-database/oldImages/large/576_1_1438868377.jpg?tr=w-800,h-1066',
+                      imageURL: meal['imageUrl'],
                       foodName: meal['name'],
                       ingredients: meal['ingredients'],
                       selected: userInfo?.savedRecipes.contains(meal['id']) ?? false,
@@ -129,13 +129,13 @@ class MealCard extends StatelessWidget {
                         width: MediaQuery
                             .sizeOf(context)
                             .width / 2.8,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(
                               12)),
                           image: DecorationImage(
                             fit: BoxFit.fitWidth,
                             image: NetworkImage(
-                                'https://www.onehappydish.com/wp-content/uploads/2023/11/scrambled-eggs-with-cream-cheese-recipe.jpg'),
+                                meal['imageUrl']),
                           ),
                         ),
                       ),
@@ -164,13 +164,13 @@ class MealCard extends StatelessWidget {
                  width: MediaQuery
                      .sizeOf(context)
                      .width / 2.8,
-                 decoration: const BoxDecoration(
+                 decoration: BoxDecoration(
                    borderRadius: BorderRadius.all(Radius.circular(
                        12)),
                    image: DecorationImage(
                      fit: BoxFit.fitWidth,
                      image: NetworkImage(
-                         'https://www.onehappydish.com/wp-content/uploads/2023/11/scrambled-eggs-with-cream-cheese-recipe.jpg'),
+                         meal['imageUrl']),
                    ),
                  ),
                ),

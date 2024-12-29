@@ -97,9 +97,9 @@ class Fetch{
 
   Future<List<Map<String, dynamic>>> getRecipesByType(int index) async {
 
-    List<String> mealTypes = ['breakfast', 'main dish', 'dessert', 'snack'];
+    List<String> mealTypes = ['all','breakfast', 'main dish', 'dessert', 'snack', 'drinks'];
 
-    if (index < 0 || index > mealTypes.length) {
+    if (index <= 0 || index >= mealTypes.length) {
       print('Invalid index. Please provide a value between 0 and ${mealTypes
           .length - 1}.');
       return [];
@@ -127,12 +127,14 @@ class Fetch{
       // String decription = recipe['discription'];
       List ingredients = recipe['ingredients'];
       String cookingTime = recipe['cookingTime'];
+      String imageUrl = recipe['imageUrl'];
 
     return {
       'name': name,
       'cal': cal,
       'ingredients': ingredients,
-      'cookingTime': cookingTime
+      'cookingTime': cookingTime,
+      'imageUrl' : imageUrl
     };
   }
 
@@ -153,7 +155,8 @@ class Fetch{
          'name': recipeDetails['name'],
          'cal': recipeDetails['cal'],
          'ingredients': recipeDetails['ingredients'],
-         'cookingTime': recipeDetails['cookingTime']
+         'cookingTime': recipeDetails['cookingTime'],
+         'imageUrl' : recipeDetails['imageUrl']
        };
      }).toList(),
    );

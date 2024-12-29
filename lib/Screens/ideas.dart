@@ -93,8 +93,8 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
               // indicatorColor: Colors.orange[700],
               tabs: const [
                 Tab(text: 'For You'),
-                Tab(text: 'Community Favorites'),
                 Tab(text: 'New & Trending'),
+                Tab(text: 'Community Favorites'),
                 Tab(text: 'Kid-Friendly'),
                 Tab(text: 'Quick Meals'),
               ],
@@ -105,8 +105,8 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
           controller: _tabController,
           children: [
             _buildForYouTab(),
+            _newTab(),
             _buildCommunityFavoritesTab(),
-            _buildNewAndTrendingTab(),
             _buildKidFriendlyTab(),
             _buildQuickMealsTab(),
           ],
@@ -432,7 +432,7 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
     return const Center(child: Text('Community Favorites'));
   }
 
-  Widget _buildNewAndTrendingTab() {
+  Widget _newTab() {
     final user = Provider.of<UserID>(context);
 
     return Center(child: NewRecipes(uid: user.uid));

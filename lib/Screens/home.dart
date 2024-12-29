@@ -1,14 +1,10 @@
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
-import 'package:meal/Auth/auth_service.dart';
 import 'package:meal/DataBase/fetch_db.dart';
-import 'package:meal/Models/color_model.dart';
-import 'package:meal/Models/decoration.dart';
 import 'package:meal/Models/meal_card.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:meal/Screens/profile.dart';
-import 'package:meal/Screens/recipe_details.dart';
-import 'package:meal/Screens/recipe_list.dart';
+import 'package:meal/Screens/recipes/recipe_list.dart';
 import 'package:meal/Screens/shopping_list.dart';
 import 'package:provider/provider.dart';
 import '../Models/user_id.dart';

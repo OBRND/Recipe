@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meal/Screens/recipe_list.dart';
+import 'package:meal/Screens/recipes/recipe_list.dart';
 import 'package:provider/provider.dart';
 import '../../DataBase/fetch_db.dart';
 import '../../Models/meal_card.dart';
@@ -136,7 +136,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.history),
+                                  Icon(Icons.history, size: 20),
                                   SizedBox(width: 8),
                                   Text('Recently Viewed'),
                                 ],
@@ -146,7 +146,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.bookmark),
+                                  Icon(Icons.bookmark, size: 20),
                                   SizedBox(width: 8),
                                   Text('Saved Recipes'),
                                 ],
@@ -201,7 +201,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
           onTap: () async {
-            if (index == 4) {
+            if (index == 0) {
               List<Map<String, dynamic>> recipes = await fetch.getAllRecipes();
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => RecipeList(recipes: recipes, userData: userData, swap: false, index: null, meal: {}, day: null, name: [],
