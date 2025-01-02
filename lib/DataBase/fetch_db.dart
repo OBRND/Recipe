@@ -123,24 +123,24 @@ class Fetch{
     DocumentSnapshot recipe = await Recipe
         .doc(recipeId).get();
       String name = recipe['name'];  
-      int cal = recipe['cal'];
+      int cal = recipe['calories'] ?? 0;
       // String decription = recipe['discription'];
       List ingredients = recipe['ingredients'];
       String cookingTime = recipe['cookingTime'];
       String imageUrl = recipe['imageUrl'];
+      String count = recipe['favoritesCount'].toString();
 
     return {
       'name': name,
       'cal': cal,
       'ingredients': ingredients,
       'cookingTime': cookingTime,
-      'imageUrl' : imageUrl
+      'imageUrl' : imageUrl,
+      'favoritesCount' : count
     };
   }
 
-  Future getSavedRecipes(List Ids) async {
-
-   List recipeIds = Ids;
+  Future getSavedRecipes(List recipeIds) async {
 
    if (recipeIds.isEmpty) {
      print("No data");
@@ -156,7 +156,8 @@ class Fetch{
          'cal': recipeDetails['cal'],
          'ingredients': recipeDetails['ingredients'],
          'cookingTime': recipeDetails['cookingTime'],
-         'imageUrl' : recipeDetails['imageUrl']
+         'imageUrl' : recipeDetails['imageUrl'],
+         'favoritesCount' : recipeDetails['favoritesCount']
        };
      }).toList(),
    );
@@ -252,16 +253,45 @@ class Fetch{
        var recipeSnapshot = await ref.get();
        if (recipeSnapshot.exists) {
          fetchedRecipes.add({
+           'id': recipeSnapshot.id,
            'name': recipeSnapshot['name'],
            'imageUrl': recipeSnapshot['imageUrl'],
-           'cookingTime': recipeSnapshot['cookingTime']
+           'cookingTime': recipeSnapshot['cookingTime'],
+           'cal': recipeSnapshot['calories'],
+           'ingredients': recipeSnapshot['ingredients'],
+           'favoritesCount': recipeSnapshot['favoritesCount']
          });
        }
      }
    return fetchedRecipes;
  }
 
-  Future<Map<String, dynamic>> shoppingList() async{
+ Future<List<Map<String, dynamic>>> userContributions() async {
+   final querySnapshot = await Recipe
+       .where('contributor', isEqualTo: uid)
+       .get();
+
+   return querySnapshot.docs.map((doc) {
+     var data = doc.data()  as Map<String, dynamic>;
+     data['id'] = doc.id;  // Add recipe ID to data
+     return data;
+   }).toList();
+ }
+
+ Future<List<Map<String, dynamic>>> fetchFavorites(int limit) async {
+   final snapshot = await Recipe
+       .orderBy('favoritesCount', descending: true)
+       .limit(limit)
+       .get();
+
+   return snapshot.docs.map((doc) {
+     final data = doc.data() as Map<String, dynamic>;
+     data['id'] = doc.id;
+     return data;
+   }).toList();
+ }
+
+ Future<Map<String, dynamic>> shoppingList() async{
     DocumentSnapshot publicScheduleSnapshot = await Shopping.doc(uid).get();
     print({'Shoppping list:' + publicScheduleSnapshot['ingredients'].toString()});
     return publicScheduleSnapshot['ingredients'];

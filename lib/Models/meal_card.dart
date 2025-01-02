@@ -52,7 +52,7 @@ class MealCard extends StatelessWidget {
                               width: MediaQuery.sizeOf(context).width / 2.8,
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10                                                           ),
+                              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -73,11 +73,11 @@ class MealCard extends StatelessWidget {
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Icon(Icons.star, size: 16,
+                                      Icon(Icons.bookmark_added , size: 16,
                                           color: Colors.orange[700]),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '4.8',
+                                        meal['favoritesCount'].toString(),
                                         style: TextStyle(
                                           color: Colors.grey[600],
                                           fontSize: 14,
@@ -135,7 +135,7 @@ class MealCard extends StatelessWidget {
                           image: DecorationImage(
                             fit: BoxFit.fitWidth,
                             image: NetworkImage(
-                                meal['imageUrl']),
+                                resizeImageUrl(meal['imageUrl'])),
                           ),
                         ),
                       ),
@@ -170,7 +170,7 @@ class MealCard extends StatelessWidget {
                    image: DecorationImage(
                      fit: BoxFit.fitWidth,
                      image: NetworkImage(
-                         meal['imageUrl']),
+                         resizeImageUrl(meal['imageUrl'])),
                    ),
                  ),
                ),
@@ -180,4 +180,15 @@ class MealCard extends StatelessWidget {
       ),
     );
   }
+
+  String resizeImageUrl(String url, {int width = 400, int height = 400}) {
+    if (url.contains('/upload/')) {
+      return url.replaceFirst(
+        '/upload/',
+        '/upload/c_fill,w_${width},h_${height}/',
+      );
+    }
+    return url;
+  }
+
 }

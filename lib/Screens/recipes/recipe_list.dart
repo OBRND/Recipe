@@ -185,22 +185,25 @@ class _RecipeListState extends State<RecipeList> {
 
   Widget _buildRecipeCard(Map<String, dynamic> recipe, Write write) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8), // Reduced margin
+      margin: const EdgeInsets.only(bottom: 2), // Reduced margin
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 1, // Reduced elevation for subtlety
+      elevation: 0, // Reduced elevation for subtlety
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () => _handleRecipeTap(recipe, write),
         child: Row(
           children: [
             // Smaller image size
-            ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-              child: Image.network(
-                recipe['imageUrl'],
-                width: 80, // Reduced width
-                height: 80, // Reduced height
-                fit: BoxFit.cover,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                child: Image.network(
+                  resizeImageUrl(recipe['imageUrl']),
+                  width: 50, // Reduced width
+                  height: 50, // Reduced height
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             Expanded(
@@ -336,5 +339,15 @@ class _RecipeListState extends State<RecipeList> {
         ],
       ),
     );
+  }
+
+  String resizeImageUrl(String url, {int width = 400, int height = 400}) {
+    if (url.contains('/upload/')) {
+      return url.replaceFirst(
+        '/upload/',
+        '/upload/c_fill,w_${width},h_${height}/',
+      );
+    }
+    return url;
   }
 }

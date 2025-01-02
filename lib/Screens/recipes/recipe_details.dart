@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meal/DataBase/write_db.dart';
+import 'package:meal/Models/decoration.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
@@ -29,13 +30,13 @@ class RecipeDetailsPage extends StatefulWidget {
 
 class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTickerProviderStateMixin{
   Color primaryColor = Colors.white;
-  bool pressed = false;
   late AnimationController _controller;
+  bool pressed = false;
+  bool updatedRecent = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize animation controller
     _controller = AnimationController(
       duration: const Duration(milliseconds: 200), // Short duration for pop effect
       vsync: this,
@@ -44,9 +45,17 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
     );
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserID>(context);
+    Write write = Write(uid: user.uid);
+
+    if(!updatedRecent) {
+      write.updateRecent(widget.recipeID);
+      updatedRecent = true;
+    }
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -54,7 +63,14 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_circle_left_rounded, size: 30),
+          icon: Container(
+            margin: EdgeInsets.zero,
+              padding: EdgeInsets.zero,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.5),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Icon(Icons.arrow_circle_left_rounded, size: 30)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -64,6 +80,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
         ScaleTransition(
         scale: _controller,
         child: IconButton(
+          iconSize: 20,
           onPressed: widget.selected || pressed
               ? null
               : () async {
@@ -74,12 +91,19 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
               pressed = true;
             });
           },
-          icon: Icon(
-            pressed || widget.selected ? Icons.favorite : Icons.favorite_border,
-            color: pressed || widget.selected ? Colors.red : Colors.grey,
+          icon: Container(
+            padding: EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.5),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Icon(
+              pressed || widget.selected ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+              color: pressed || widget.selected ? Colors.red : Colors.grey,
+            ),
           ),
         ),
-      )
+              )
         ],
       ),
       body:
@@ -98,32 +122,26 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
               ),
             ),
             child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white.withOpacity(0.6),
-                    Colors.white.withOpacity(0.1),
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.fromLTRB(6, 6, 20, 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black26.withOpacity(.7),
+                      borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
+                    ),
+                    child: Text(
                       widget.foodName,
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.white,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -170,7 +188,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
           flex: 4,
           child: Text(
             widget.ingredients[index]['quantity'].toString() + ' ' +
-            widget.ingredients[index]['measurement'],
+            widget.ingredients[index]['unit'],
             style: const TextStyle(
               fontSize: 15,
               color: Colors.black54,

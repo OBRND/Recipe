@@ -3,7 +3,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:meal/Models/decoration.dart';
 import 'package:meal/Models/user_id.dart';
-import 'package:meal/Screens/add_recipe.dart';
+import 'package:meal/Screens/ideas/add_recipe.dart';
+import 'package:meal/Screens/ideas/favorites.dart';
+import 'package:meal/Screens/ideas/my_recipes.dart';
 import 'package:provider/provider.dart';
 
 import 'new_recipes.dart';
@@ -23,26 +25,28 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
   final ScrollController _scrollController = ScrollController();
   bool _showFloatingButton = true;
   static const Color accentColor = Color(0xDBF32607);
+  final ValueNotifier<bool> _showFloatingButtonNotifier = ValueNotifier(true);
+
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     _scrollController.addListener(_scrollListener);
   }
 
   void _scrollListener() {
-    // Hide floating button when scrolling down
     if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
-      if (_showFloatingButton) {
-        setState(() => _showFloatingButton = false);
+      if (_showFloatingButtonNotifier.value) {
+        _showFloatingButtonNotifier.value = false;
       }
     } else {
-      if (!_showFloatingButton) {
-        setState(() => _showFloatingButton = true);
+      if (!_showFloatingButtonNotifier.value) {
+        _showFloatingButtonNotifier.value = true;
       }
     }
   }
+
 
   @override
   void dispose() {
@@ -53,98 +57,107 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserID>(context);
     super.build(context);
     return Scaffold(
-      body: NestedScrollView(
-        controller: _scrollController,
-        headerSliverBuilder: (context, innerBoxIsScrolled) =>
-        [
-          SliverAppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            floating: true,
-            pinned: true,
-            title: const Text(
-              'Recipe Ideas',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
+        body: NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (context, innerBoxIsScrolled) =>
+          [
+            SliverAppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              floating: true,
+              pinned: true,
+              title: const Text(
+                'Recipe Ideas',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.search, color: Colors.black87),
-                onPressed: () {
-                  // Implement search functionality
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.filter_list, color: Colors.black87),
-                onPressed: () {
-                  // Implement filter functionality
-                },
-              ),
-            ],
-            bottom: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              labelColor: accentColor,
-              // unselectedLabelColor: Colors.grey[600],
-              // indicatorColor: Colors.orange[700],
-              tabs: const [
-                Tab(text: 'For You'),
-                Tab(text: 'New & Trending'),
-                Tab(text: 'Community Favorites'),
-                Tab(text: 'Kid-Friendly'),
-                Tab(text: 'Quick Meals'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.search, color: Colors.black87),
+                  onPressed: () {
+                    // Implement search functionality
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.filter_list, color: Colors.black87),
+                  onPressed: () {
+                    // Implement filter functionality
+                  },
+                ),
               ],
-            ),
-          ),
-        ],
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildForYouTab(),
-            _newTab(),
-            _buildCommunityFavoritesTab(),
-            _buildKidFriendlyTab(),
-            _buildQuickMealsTab(),
-          ],
-        ),
-      ),
-      floatingActionButton: AnimatedSlide(
-        duration: const Duration(milliseconds: 300),
-        offset: _showFloatingButton ? Offset.zero : const Offset(0, 2),
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 300),
-          opacity: _showFloatingButton ? 1 : 0,
-          child: FloatingActionButton.extended(
-            label: Container(
-              width: 120,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Icon(Icons.add, color: Colors.white),
-                  ),
-                  Text('Share recipe', style: TextStyle(
-                      color: Colors.white
-                  ),)
+              bottom: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                labelColor: accentColor,
+                // unselectedLabelColor: Colors.grey[600],
+                // indicatorColor: Colors.orange[700],
+                tabs: const [
+                  Tab(text: 'For You'),
+                  Tab(text: 'New & Trending'),
+                  Tab(text: 'Community Favorites'),
+                  Tab(text: 'My Recipes'),
+                  Tab(text: 'Kid-Friendly'),
+                  Tab(text: 'Quick Meals')
                 ],
               ),
             ),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => AddRecipeScreen()));
-            },
+          ],
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _forYouTab(),
+              _newTab(user.uid),
+              _buildCommunityFavoritesTab(user.uid),
+              _mineTab(user.uid),
+              _buildKidFriendlyTab(),
+              _buildQuickMealsTab()
+            ],
           ),
         ),
-      ),
+        floatingActionButton: ValueListenableBuilder<bool>(
+            valueListenable: _showFloatingButtonNotifier,
+            builder: (context, isVisible, child) {
+              return AnimatedSlide(
+                duration: const Duration(milliseconds: 300),
+                offset: isVisible ? Offset.zero : const Offset(0, 2),
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: isVisible ? 1 : 0,
+                  child: FloatingActionButton.extended(
+                    label: Container(
+                      width: 120,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: Icon(Icons.add, color: Colors.white),
+                          ),
+                          Text('Share recipe', style: TextStyle(
+                              color: Colors.white
+                          ),)
+                        ],
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => AddRecipeScreen()));
+                    },
+                  )
+                ),
+
+              );
+            }
+            )
     );
   }
 
-  Widget _buildForYouTab() {
+  Widget _forYouTab() {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -428,14 +441,16 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
 
 
   // Other tab building methods would follow similar patterns
-  Widget _buildCommunityFavoritesTab() {
-    return const Center(child: Text('Community Favorites'));
+  Widget _buildCommunityFavoritesTab(String uid) {
+    return Center(child:  CommunityFavorites(uid: uid));
   }
 
-  Widget _newTab() {
-    final user = Provider.of<UserID>(context);
+  Widget _newTab(String uid) {
+    return Center(child: NewRecipes(uid: uid));
+  }
 
-    return Center(child: NewRecipes(uid: user.uid));
+  Widget _mineTab(String uid) {
+    return Center(child: MyContributionsScreen(uid: uid));
   }
 
   Widget _buildKidFriendlyTab() {

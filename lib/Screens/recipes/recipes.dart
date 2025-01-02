@@ -282,6 +282,8 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
             }
 
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              print('++++++++');
+              print(snapshot.data);
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

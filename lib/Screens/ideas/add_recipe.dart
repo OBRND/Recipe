@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meal/Models/decoration.dart';
 import 'package:provider/provider.dart';
-import '../DataBase/storage.dart';
-import '../DataBase/write_db.dart';
-import '../Models/user_id.dart';
+import '../../DataBase/storage.dart';
+import '../../DataBase/write_db.dart';
+import '../../Models/user_id.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});

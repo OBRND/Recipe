@@ -37,18 +37,58 @@ class Write{
   }
 
   Future saveRecipe(String id) async{
+    final userRef = user.doc(uid);
+    final recipeRef = Recipe.doc(id);
 
-    return await user.doc(uid).update({
-      "savedRecipes" : FieldValue.arrayUnion([id])
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+
+      final userSnapshot = await transaction.get(userRef);
+      List<dynamic> savedRecipes = userSnapshot['savedRecipes'] ?? [];
+
+      if (!savedRecipes.contains(id)) {
+        savedRecipes.add(id);
+        transaction.update(userRef, {'savedRecipes': savedRecipes});
+      }
+
+      transaction.update(recipeRef, {
+        'favoritesCount': FieldValue.increment(1),
+      });
     });
   }
 
-  Future updateRecent(String id) async{
+  Future<void> addToFavorites(String recipeId) async {
+    final recipeRef = FirebaseFirestore.instance.collection('recipes').doc(recipeId);
 
-    return await user.doc(uid).update({
-      "recent" : FieldValue.arrayUnion([id])
+    await recipeRef.update({
+      'favoritesCount': FieldValue.increment(1),
     });
   }
+
+
+  Future<void> updateRecent(String recipeId) async {
+    final docRef = user.doc(uid);
+
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+
+      if (snapshot.exists) {
+        List<dynamic> recentRecipes = snapshot['recent'] ?? [];
+
+         recentRecipes.remove(recipeId);
+
+         recentRecipes.insert(0, recipeId);
+
+        if (recentRecipes.length > 10) {
+          recentRecipes = recentRecipes.sublist(0, 10);
+        }
+
+        transaction.update(docRef, {
+          'recent': recentRecipes,
+        });
+      }
+    });
+  }
+
 
   // Method to clone the public meal plan
   Future<void> createCustomMealPlanWithSwap(
@@ -252,7 +292,7 @@ class Write{
           for (var ingredient in ingredients) {
             String ingredientName = ingredient['name'];
             int quantity = ingredient['quantity'];
-            String measurement = ingredient['measurement'];
+            String measurement = ingredient['unit'];
 
             // Check if the ingredient is already in the map
             if (ingredientMap.containsKey(ingredientName)) {
@@ -304,7 +344,7 @@ class Write{
       for (var ingredient in ingredients) {
         String name = ingredient['name'];
         int quantity = ingredient['quantity'];
-        String measurement = ingredient['measurement'];
+        String measurement = ingredient['unit'];
 
         if (map.containsKey(name)) {
           map[name]['quantity'] += (isAdding ? quantity : -quantity);
@@ -377,7 +417,8 @@ class Write{
         'timestamp': FieldValue.serverTimestamp(),
         'preferences' : selectedPreferences,
         'calories' : calories,
-        'videoUrl' : videoUrl
+        'videoUrl' : videoUrl,
+        'id' : recipeId
       });
       await newRecipeUpdate(recipeId);
       print('Recipe saved successfully!');
