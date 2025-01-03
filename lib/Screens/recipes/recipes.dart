@@ -41,6 +41,39 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
         _opacityNotifier.value = newOpacity;
       });
   }
+  List<Map<String, dynamic>> _cachedRecipes = [];
+  List<Map<String, dynamic>> _cachedRecipes2 = [];
+  late Future<dynamic> _recipeFuture;
+  late Future<dynamic> _recipeFuture2;
+  bool _isLoading = false;
+
+  void _loadRecipes(uid, isRecentlyViewed, userData) {
+    isRecentlyViewed ? _recipeFuture = Fetch(uid: uid).getSavedRecipes(
+      userData!.recentRecipes).then((newRecipes) {
+      setState(() {
+        _cachedRecipes = newRecipes;
+        });
+      return newRecipes;
+    }).catchError((_) {
+      setState(() {
+        _isLoading = false;
+      });
+      return _cachedRecipes;
+    }) : _recipeFuture2 = Fetch(uid: uid).getSavedRecipes(
+      userData!.savedRecipes).then((newRecipes) {
+      setState(() {
+        _cachedRecipes2 = newRecipes;
+        _isLoading = true;
+      });
+      return newRecipes;
+    }).catchError((_) {
+      setState(() {
+        _isLoading = false;
+      });
+      return _cachedRecipes;
+    });
+  }
+
 
   @override
   void dispose() {
@@ -55,8 +88,13 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserID>(context);
+    final userData = Provider.of<UserDataModel?>(context);
     super.build(context);
-
+    if(!_isLoading){
+      _loadRecipes(user.uid, true, userData);
+      _loadRecipes(user.uid, false, userData);
+    }
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: NestedScrollView(
@@ -254,9 +292,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
     return Consumer2<UserID, UserDataModel?>(
       builder: (context, user, userData, _) {
         return FutureBuilder(
-          future: Fetch(uid: user.uid).getSavedRecipes(
-            isRecentlyViewed ? userData!.recentRecipes : userData!.savedRecipes,
-          ),
+          future: isRecentlyViewed ? _recipeFuture: _recipeFuture2,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -279,6 +315,9 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
                   ],
                 ),
               );
+            }
+            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isNotEmpty) {
+              isRecentlyViewed ? _buildMeal(_cachedRecipes) : _buildMeal(_cachedRecipes2);
             }
 
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -305,48 +344,29 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
               );
             }
 
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                final recipe = snapshot.data![snapshot.data!.length - 1 - index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: MealCard(
-                    meal: recipe,
-                    home: false,
-                    index: index,
-                  ),
-                );
-              },
-            );
+            return _buildMeal(snapshot.data);
           },
         );
       },
     );
   }
-}
 
-class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar _tabBar;
-
-  _StickyTabBarDelegate(this._tabBar);
-
-  @override
-  double get minExtent => _tabBar.preferredSize.height;
-  @override
-  double get maxExtent => _tabBar.preferredSize.height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.white,
-      child: _tabBar,
+  Widget _buildMeal(snapshot){
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      itemCount: snapshot.length,
+      itemBuilder: (context, index) {
+        final recipe = snapshot[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: MealCard(
+            meal: recipe,
+            home: false,
+            index: index,
+          ),
+        );
+      },
     );
   }
 
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
-  }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:meal/Models/user_data.dart';
+import 'package:meal/Models/user_id.dart';
 import 'package:provider/provider.dart';
+import '../DataBase/write_db.dart';
 import '../Screens/recipes/recipe_details.dart';
 import 'color_model.dart';
 import 'decoration.dart';
@@ -15,6 +17,8 @@ class MealCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userInfo = Provider.of<UserDataModel?>(context);
+    final user = Provider.of<UserID>(context);
+    bool saved = userInfo!.savedRecipes.contains(meal['id']);
 
     return InkWell(
       onTap: () {
@@ -73,7 +77,7 @@ class MealCard extends StatelessWidget {
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Icon(Icons.bookmark_added , size: 16,
+                                      Icon(Icons.favorite, size: 16,
                                           color: Colors.orange[700]),
                                       const SizedBox(width: 4),
                                       Text(
@@ -105,14 +109,17 @@ class MealCard extends StatelessWidget {
                         Positioned(
                           right: 0,
                           top: -10,
-                          child: IconButton(onPressed: (){},
-                              icon: userInfo!.savedRecipes.contains(meal['id']) ? Icon(
+                          child: IconButton(onPressed: () async{
+                            saved ? await Write(uid: user.uid).removeSavedRecipe(meal['id'])
+                                : await Write(uid: user.uid).saveRecipe(meal['id']);
+                          },
+                              icon: saved ? Icon(
                             Icons.bookmark_rounded,
                             size: 20,
-                            color: Colors.red,) : Icon(
+                            color: Colors.red) : Icon(
                                 Icons.bookmark_border_rounded,
                                 size: 20,
-                                color: Colors.grey,)
+                                color: Colors.grey)
                         ),
                         )
                       ],

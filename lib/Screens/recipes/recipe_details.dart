@@ -81,14 +81,14 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
         scale: _controller,
         child: IconButton(
           iconSize: 20,
-          onPressed: widget.selected || pressed
-              ? null
-              : () async {
+          onPressed: () async {
             await _controller.forward();
             await _controller.reverse();
-            Write(uid: user.uid).saveRecipe(widget.recipeID);
+            widget.selected ?
+            await Write(uid: user.uid).removeSavedRecipe(widget.recipeID) :
+            await Write(uid: user.uid).saveRecipe(widget.recipeID);
             setState(() {
-              pressed = true;
+              pressed = !pressed;
             });
           },
           icon: Container(
@@ -98,8 +98,8 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
               borderRadius: BorderRadius.circular(100),
             ),
             child: Icon(
-              pressed || widget.selected ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-              color: pressed || widget.selected ? Colors.red : Colors.grey,
+              !pressed && widget.selected ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+              color: !pressed && widget.selected ? Colors.red : Colors.grey,
             ),
           ),
         ),

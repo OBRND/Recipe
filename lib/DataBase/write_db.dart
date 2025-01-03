@@ -64,6 +64,18 @@ class Write{
     });
   }
 
+  Future<void> removeSavedRecipe(String recipeId) async {
+
+    final userDocRef = user.doc(uid);
+
+    try {
+      await userDocRef.update({
+        'savedRecipes': FieldValue.arrayRemove([recipeId]),
+      });
+    } catch (e) {
+      print("Failed to remove recipe: $e");
+    }
+  }
 
   Future<void> updateRecent(String recipeId) async {
     final docRef = user.doc(uid);
