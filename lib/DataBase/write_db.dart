@@ -56,25 +56,31 @@ class Write{
     });
   }
 
-  Future<void> addToFavorites(String recipeId) async {
-    final recipeRef = FirebaseFirestore.instance.collection('recipes').doc(recipeId);
-
-    await recipeRef.update({
-      'favoritesCount': FieldValue.increment(1),
-    });
-  }
+  // Future<void> addToFavorites(String recipeId) async {
+  //   final recipeRef = FirebaseFirestore.instance.collection('recipes').doc(recipeId);
+  //
+  //   await recipeRef.update({
+  //     'favoritesCount': FieldValue.increment(1),
+  //   });
+  // }
 
   Future<void> removeSavedRecipe(String recipeId) async {
-
+    final recipeRef = Recipe.doc(recipeId);
     final userDocRef = user.doc(uid);
 
     try {
       await userDocRef.update({
         'savedRecipes': FieldValue.arrayRemove([recipeId]),
       });
+      await recipeRef.update({
+        'favoritesCount': FieldValue.increment(-1),
+      });
     } catch (e) {
       print("Failed to remove recipe: $e");
     }
+
+
+
   }
 
   Future<void> updateRecent(String recipeId) async {

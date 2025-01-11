@@ -141,6 +141,7 @@ class Fetch{
   }
 
   Future getSavedRecipes(List recipeIds) async {
+    print(recipeIds);
 
    if (recipeIds.isEmpty) {
      print("No data");

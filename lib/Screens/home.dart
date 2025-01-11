@@ -304,9 +304,9 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                                             recipes: weeklyPlan,
                                             userData: userInfo,
                                             swap: true,
-                                            index: mealType == 'breakfast' ? 0 :
-                                            mealType == 'lunch' ? 1 :
-                                            mealType == 'dinner' ? 2 : 3,
+                                            index: mealType == 'breakfast' ? 1 :
+                                            mealType == 'lunch' ? 2 :
+                                            mealType == 'dinner' ? 3 : 4,
                                             meal: meal,
                                             day: selected,
                                             child: weeklyPlan.indexOf(dayData),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meal/Screens/recipes/recipe_list.dart';
 import 'package:provider/provider.dart';
 import '../../DataBase/fetch_db.dart';
+import '../../DataBase/state_mgt.dart';
 import '../../Models/meal_card.dart';
 import '../../Models/user_data.dart';
 import '../../Models/user_id.dart';
@@ -43,37 +44,36 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
   }
   List<Map<String, dynamic>> _cachedRecipes = [];
   List<Map<String, dynamic>> _cachedRecipes2 = [];
+  List savedRecipes = [];
   late Future<dynamic> _recipeFuture;
   late Future<dynamic> _recipeFuture2;
-  bool _isLoading = false;
+  bool _isLoading = true;
 
-  void _loadRecipes(uid, isRecentlyViewed, userData) {
-    isRecentlyViewed ? _recipeFuture = Fetch(uid: uid).getSavedRecipes(
-      userData!.recentRecipes).then((newRecipes) {
-      setState(() {
-        _cachedRecipes = newRecipes;
-        });
+  void _loadRecipes(String uid, bool isRecentlyViewed, UserDataModel userData) {
+    final List recipeIds = isRecentlyViewed ? userData.recentRecipes : userData.savedRecipes;
+
+    final future = Fetch(uid: uid).getSavedRecipes(recipeIds).then((newRecipes) {
+        if (isRecentlyViewed) {
+          _cachedRecipes = newRecipes;
+        } else {
+          _cachedRecipes2 = newRecipes;
+          savedRecipes = recipeIds;
+        }
       return newRecipes;
     }).catchError((_) {
       setState(() {
         _isLoading = false;
       });
-      return _cachedRecipes;
-    }) : _recipeFuture2 = Fetch(uid: uid).getSavedRecipes(
-      userData!.savedRecipes).then((newRecipes) {
-      setState(() {
-        _cachedRecipes2 = newRecipes;
-        _isLoading = true;
-      });
-      return newRecipes;
-    }).catchError((_) {
-      setState(() {
-        _isLoading = false;
-      });
-      return _cachedRecipes;
+      return isRecentlyViewed ? _cachedRecipes : _cachedRecipes2;
     });
-  }
 
+    if (isRecentlyViewed) {
+      _recipeFuture = future;
+
+    } else {
+      _recipeFuture2 = future;
+    }
+  }
 
   @override
   void dispose() {
@@ -91,8 +91,8 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
     final user = Provider.of<UserID>(context);
     final userData = Provider.of<UserDataModel?>(context);
     super.build(context);
-    if(!_isLoading){
-      _loadRecipes(user.uid, true, userData);
+    if(_isLoading){
+      _loadRecipes(user.uid, true, userData!);
       _loadRecipes(user.uid, false, userData);
     }
     return Scaffold(
@@ -289,12 +289,35 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
   }
 
   Widget _buildRecipeList(bool isRecentlyViewed) {
-    return Consumer2<UserID, UserDataModel?>(
-      builder: (context, user, userData, _) {
+    final user = Provider.of<UserID>(context);
+
+    return StreamBuilder<UserDataModel?>(
+      stream: userStream(user.uid),
+      builder: (context, snapshot) {
+        
+        if (snapshot.hasError) {
+          return Center(child: Text('Error loading user data'));
+        }
+
+        if (!snapshot.hasData || snapshot.data == null) {
+          return Center(child: Text('No user data available'));
+        }
+
+        final userData = snapshot.data!;
+        if(!_isLoading && savedRecipes.toString() != snapshot.data?.savedRecipes.toString()){
+          print('reached');// some problem here
+          _loadRecipes(user.uid, isRecentlyViewed, userData);
+        }
+
         return FutureBuilder(
-          future: isRecentlyViewed ? _recipeFuture: _recipeFuture2,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+          future: isRecentlyViewed ? _recipeFuture : _recipeFuture2,
+          builder: (context, futureSnapshot) {
+
+            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isNotEmpty) {
+              isRecentlyViewed ? _buildMeal(_cachedRecipes) : _buildMeal(_cachedRecipes2);
+            }
+
+            if (futureSnapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isEmpty) {
               return Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.orange[700]!),
@@ -302,49 +325,22 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
               );
             }
 
-            if (snapshot.hasError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 48, color: Colors.orange[700]),
-                    const SizedBox(height: 16),
-                    Text('Error loading recipes',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              );
-            }
-            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isNotEmpty) {
-              isRecentlyViewed ? _buildMeal(_cachedRecipes) : _buildMeal(_cachedRecipes2);
+            if (futureSnapshot.hasError) {
+              return Center(child: Text('Error loading recipes'));
             }
 
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              print('++++++++');
-              print(snapshot.data);
+            final recipes = futureSnapshot.data;
+            if (recipes == null || recipes.isEmpty) {
               return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      isRecentlyViewed ? Icons.history : Icons.bookmark_border,
-                      size: 48,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      isRecentlyViewed
-                          ? 'No recently viewed recipes'
-                          : 'No saved recipes yet',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
+                child: Text(
+                  isRecentlyViewed
+                      ? 'No recently viewed recipes'
+                      : 'No saved recipes yet',
                 ),
               );
             }
 
-            return _buildMeal(snapshot.data);
+            return _buildMeal(recipes);
           },
         );
       },

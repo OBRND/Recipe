@@ -14,6 +14,7 @@ class UserDataModel {
     required this.custom,
   });
 
+
   factory UserDataModel.fromMap(Map<String, dynamic> data) {
     return UserDataModel(
       name: data['name'] ?? '',

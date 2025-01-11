@@ -39,6 +39,7 @@ class _RecipeListState extends State<RecipeList> {
   late bool isLoading;
   int recipesIndex = 0;
   List<Map<String, dynamic>> weeklyPlan = [];
+  bool loadfinished = false;
 
   @override
   void initState() {
@@ -57,6 +58,7 @@ class _RecipeListState extends State<RecipeList> {
         widget.recipes = fetched;
         isLoading = false;
         recipesIndex = index;
+        loadfinished = true;
       });
     }
   }
@@ -66,12 +68,17 @@ class _RecipeListState extends State<RecipeList> {
     final user = Provider.of<UserID>(context);
     final write = Write(uid: user.uid);
 
-    if (widget.swap && widget.index != null) {
+    if (widget.swap && widget.index != null && !loadfinished) {
       _fetchRecipes(user.uid, widget.index);
     }
 
     final filteredRecipes = widget.recipes.where((recipe) {
-      final nameMatch = recipe['name'].toLowerCase().contains(searchQuery.toLowerCase());
+      final name = recipe['name'];
+      if (name == null || name.isEmpty) {
+        print('Recipe with null or empty name: $recipe');
+        return false;
+      }
+      final nameMatch = name.toLowerCase().contains(searchQuery.toLowerCase());
       if (!nameMatch) return false;
 
       switch (selectedFilter) {
@@ -302,41 +309,125 @@ class _RecipeListState extends State<RecipeList> {
   void _showSwapDialog(Map<String, dynamic> recipe, Write write) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Confirm Swap'),
-        content: RecipeDetailsPage(
-          recipeID: recipe['id'],
-          imageURL: recipe['imageUrl'],
-          foodName: recipe['name'],
-          ingredients: recipe['ingredients'],
-          selected: widget.userData?.savedRecipes.contains(recipe['id']) ?? false,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              write.createCustomMealPlanWithSwap(
-                weeklyPlan,
-                recipe['id'],
-                recipesIndex,
-                widget.day!,
-                widget.child!,
-                widget.userData!.children,
-              );
-              write.updateIngredients(recipe['ingredients'], widget.meal['ingredients']);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange[700],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Flexible(
+                    child: Container(
+                      height: MediaQuery.sizeOf(context).height * .7,
+                      child: RecipeDetailsPage(
+                        recipeID: recipe['id'],
+                        imageURL: recipe['imageUrl'],
+                        foodName: recipe['name'],
+                        ingredients: recipe['ingredients'],
+                        selected: widget.userData?.savedRecipes.contains(recipe['id']) ?? false,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[50],
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.swap_horiz, color: Colors.orange[700], size: 24),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Confirm Recipe Swap',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        onPressed: () => Navigator.pop(context),
+                        color: Colors.grey[600],
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            child: const Text('Confirm Change'),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                border: Border(top: BorderSide(color: Colors.grey[200]!)),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Cancel Button
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Confirm Button
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      write.createCustomMealPlanWithSwap(
+                        weeklyPlan,
+                        recipe['id'],
+                        recipesIndex,
+                        widget.day!,
+                        widget.child!,
+                        widget.userData!.children,
+                      );
+                      write.updateIngredients(recipe['ingredients'], widget.meal['ingredients']);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange[700],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.check, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Confirm Swap',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

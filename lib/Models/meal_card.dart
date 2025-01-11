@@ -7,7 +7,7 @@ import '../Screens/recipes/recipe_details.dart';
 import 'color_model.dart';
 import 'decoration.dart';
 
-class MealCard extends StatelessWidget {
+class MealCard extends StatefulWidget {
   bool home;
   var meal;
   int index;
@@ -15,10 +15,19 @@ class MealCard extends StatelessWidget {
   MealCard({required this.meal, required this.home,required this.index});
 
   @override
+  State<MealCard> createState() => _MealCardState();
+}
+
+class _MealCardState extends State<MealCard> {
+  bool clicked = false;
+  bool? temporarySavedState;
+
+
+  @override
   Widget build(BuildContext context) {
     final userInfo = Provider.of<UserDataModel?>(context);
     final user = Provider.of<UserID>(context);
-    bool saved = userInfo!.savedRecipes.contains(meal['id']);
+    final bool saved = temporarySavedState ?? userInfo!.savedRecipes.contains(widget.meal['id']);
 
     return InkWell(
       onTap: () {
@@ -26,11 +35,11 @@ class MealCard extends StatelessWidget {
           MaterialPageRoute(
             builder: (BuildContext context) =>
                     RecipeDetailsPage(
-                      recipeID: meal['id'],
-                      imageURL: meal['imageUrl'],
-                      foodName: meal['name'],
-                      ingredients: meal['ingredients'],
-                      selected: userInfo?.savedRecipes.contains(meal['id']) ?? false,
+                      recipeID: widget.meal['id'],
+                      imageURL: widget.meal['imageUrl'],
+                      foodName: widget.meal['name'],
+                      ingredients: widget.meal['ingredients'],
+                      selected: userInfo?.savedRecipes.contains(widget.meal['id']) ?? false,
                     ),
 
           ),
@@ -61,7 +70,7 @@ class MealCard extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    meal['name'],
+                                    widget.meal['name'],
                                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                                         fontSize: 16
                                     ),
@@ -81,7 +90,7 @@ class MealCard extends StatelessWidget {
                                           color: Colors.orange[700]),
                                       const SizedBox(width: 4),
                                       Text(
-                                        meal['favoritesCount'].toString(),
+                                        widget.meal['favoritesCount'].toString(),
                                         style: TextStyle(
                                           color: Colors.grey[600],
                                           fontSize: 14,
@@ -93,7 +102,7 @@ class MealCard extends StatelessWidget {
                                           color: Colors.grey[600]),
                                       const SizedBox(width: 4),
                                       Text(
-                                        meal['cookingTime'],
+                                        widget.meal['cookingTime'],
                                         style: TextStyle(
                                           color: Colors.grey[600],
                                           fontSize: 14,
@@ -109,25 +118,48 @@ class MealCard extends StatelessWidget {
                         Positioned(
                           right: 0,
                           top: -10,
-                          child: IconButton(onPressed: () async{
-                            saved ? await Write(uid: user.uid).removeSavedRecipe(meal['id'])
-                                : await Write(uid: user.uid).saveRecipe(meal['id']);
-                          },
-                              icon: saved ? Icon(
-                            Icons.bookmark_rounded,
-                            size: 20,
-                            color: Colors.red) : Icon(
-                                Icons.bookmark_border_rounded,
-                                size: 20,
-                                color: Colors.grey)
-                        ),
+                          child: IconButton(
+                            onPressed: () async {
+                              setState(() {
+                                clicked = true;
+                                // Set the temporary state immediately to reflect the user's action.
+                                temporarySavedState = !saved;
+                              });
+
+                              try {
+                                if (saved) {
+                                  await Write(uid: user.uid).removeSavedRecipe(widget.meal['id']);
+                                } else {
+                                  await Write(uid: user.uid).saveRecipe(widget.meal['id']);
+                                }
+                              } finally {
+                                setState(() {
+                                  clicked = false;
+                                  // Clear the temporary state to rely on the Provider after the operation.
+                                  temporarySavedState = null;
+                                });
+                              }
+                            },
+                            icon: clicked ? SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.red,
+                              ),
+                            )
+                                : Icon(
+                              saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                              size: 20,
+                              color: saved ? Colors.red : Colors.grey,
+                            ),
+                          ),
                         )
                       ],
                     ),
                   ),
                 ),
               ),
-             home ? Stack(
+             widget.home ? Stack(
                   children: [
                     Card(
                       elevation: 5,
@@ -142,7 +174,7 @@ class MealCard extends StatelessWidget {
                           image: DecorationImage(
                             fit: BoxFit.fitWidth,
                             image: NetworkImage(
-                                resizeImageUrl(meal['imageUrl'])),
+                                resizeImageUrl(widget.meal['imageUrl'])),
                           ),
                         ),
                       ),
@@ -152,7 +184,7 @@ class MealCard extends StatelessWidget {
                       height: 25,
                       child: Center(
                         child: Text(
-                          '${userInfo!.children[index - 1]['name']}',
+                          '${userInfo?.children[widget.index - 1]['name']}',
                           style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -160,7 +192,7 @@ class MealCard extends StatelessWidget {
                         borderRadius: const BorderRadius.only(bottomRight: Radius.circular(15),
                           topLeft:  Radius.circular(12),
                         ),
-                        color: ChildColorModel.colorOfChild(index - 1).withOpacity(.8),
+                        color: ChildColorModel.colorOfChild(widget.index - 1).withOpacity(.8),
                       ),
                     ),
                   ]
@@ -177,7 +209,7 @@ class MealCard extends StatelessWidget {
                    image: DecorationImage(
                      fit: BoxFit.fitWidth,
                      image: NetworkImage(
-                         resizeImageUrl(meal['imageUrl'])),
+                         resizeImageUrl(widget.meal['imageUrl'])),
                    ),
                  ),
                ),
@@ -197,5 +229,4 @@ class MealCard extends StatelessWidget {
     }
     return url;
   }
-
 }
