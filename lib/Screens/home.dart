@@ -283,17 +283,14 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                   weeklyPlan.forEach((dayData) {
                     final mealsForDay = dayData["$selected"] as List<dynamic>;
                     final mealsOfType = mealsForDay.where((meal) =>
-                    meal['mealType'] == mealType.toLowerCase())
-                        .toList();
+                    meal['mealType'] == mealType.toLowerCase()).toList();
 
                     mealsOfType.forEach((meal) {
                       index ++;
                       mealWidgets.add(
                           Dismissible(
                             key: UniqueKey(),
-                            // Each Dismissible widget needs a unique key
                             direction: DismissDirection.endToStart,
-                            // Specify swipe direction
                             onDismissed: (direction) {
                               print('---------');
                               print(weeklyPlan.indexOf(dayData));
@@ -336,7 +333,6 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                   }
                   );
 
-                  // Only display the meal type if there are meals under it
                   return mealWidgets.isNotEmpty
                       ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

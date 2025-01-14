@@ -149,6 +149,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
               padding: EdgeInsets.all(16),
               color: Colors.white.withOpacity(0.1),
               child: ListView.builder(
+                physics: const BouncingScrollPhysics(),
                 itemCount: widget.ingredients.length,
                 itemBuilder: (context, index) {
                   return Padding(

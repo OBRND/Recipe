@@ -239,6 +239,7 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
         SizedBox(
           height: 220,
           child: ListView.builder(
+            physics: const BouncingScrollPhysics(),
             scrollDirection: Axis.horizontal,
             itemCount: 5,
             itemBuilder: (context, index) => _buildTrendingCard(),

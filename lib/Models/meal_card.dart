@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:meal/Models/user_id.dart';
@@ -200,17 +201,12 @@ class _MealCardState extends State<MealCard> {
                elevation: 5,
                margin: EdgeInsets.all(0),
                child: Container(
-                 width: MediaQuery
-                     .sizeOf(context)
-                     .width / 2.8,
-                 decoration: BoxDecoration(
-                   borderRadius: BorderRadius.all(Radius.circular(
-                       12)),
-                   image: DecorationImage(
-                     fit: BoxFit.fitWidth,
-                     image: NetworkImage(
-                         resizeImageUrl(widget.meal['imageUrl'])),
-                   ),
+                 width: MediaQuery.sizeOf(context).width / 2.8,
+                 height: MediaQuery.sizeOf(context).width / 2.8,
+                 child: CachedNetworkImage(
+                   imageUrl: resizeImageUrl(widget.meal['imageUrl']),
+                   placeholder: (context, url) => CircularProgressIndicator(),
+                   errorWidget: (context, url, error) => Icon(Icons.error),
                  ),
                ),
              ),

@@ -45,6 +45,7 @@ class _CommunityFavoritesState extends State<CommunityFavorites> {
 
           final recipes = snapshot.data!;
           return ListView.builder(
+            physics: const BouncingScrollPhysics(),
             itemCount: recipes.length,
             itemBuilder: (context, index) {
               final meal = recipes[index];
