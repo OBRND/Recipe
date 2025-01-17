@@ -59,62 +59,55 @@ class _MealCardState extends State<MealCard> {
                     decoration: boxDecoration,
                     child: Stack(
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: MediaQuery.sizeOf(context).width / 2.8,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        Padding(
+                          padding: EdgeInsets.only(left: MediaQuery.sizeOf(context).width / 2.8 + 10,
+                              right: 10, top: 10, bottom: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.meal['name'],
+                                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                    fontSize: 16
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Perfect for family dinner',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
                                 children: [
+                                  Icon(Icons.favorite, size: 16,
+                                      color: Colors.orange[700]),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    widget.meal['name'],
-                                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                        fontSize: 16
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Perfect for family dinner',
+                                    widget.meal['favoritesCount'].toString(),
                                     style: TextStyle(
                                       color: Colors.grey[600],
-                                      fontSize: 12,
+                                      fontSize: 14,
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.favorite, size: 16,
-                                          color: Colors.orange[700]),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        widget.meal['favoritesCount'].toString(),
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Icon(Icons.timer_outlined,
-                                          size: 16,
-                                          color: Colors.grey[600]),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        widget.meal['cookingTime'],
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
+                                  const SizedBox(width: 16),
+                                  Icon(Icons.timer_outlined,
+                                      size: 16,
+                                      color: Colors.grey[600]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    widget.meal['cookingTime'],
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Positioned(
                           right: 0,

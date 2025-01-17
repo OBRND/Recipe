@@ -50,7 +50,7 @@ class _RecipeListState extends State<RecipeList> {
   Future<void> _fetchRecipes(String uid, int? index) async {
     if (index == null) return;
 
-    final fetched = await Fetch(uid: uid).getRecipesByType(index);
+    final fetched = await Fetch(uid: uid).getRecipesByType(index + 1);
 
     if (mounted) {
       setState(() {
@@ -67,10 +67,10 @@ class _RecipeListState extends State<RecipeList> {
   Widget build(BuildContext context) {
     final user = Provider.of<UserID>(context);
     final write = Write(uid: user.uid);
-
     if (widget.swap && widget.index != null && !loadfinished) {
       _fetchRecipes(user.uid, widget.index);
     }
+    print(widget.index);
 
     final filteredRecipes = widget.recipes.where((recipe) {
       final name = recipe['name'];
@@ -391,6 +391,7 @@ class _RecipeListState extends State<RecipeList> {
                   // Confirm Button
                   ElevatedButton(
                     onPressed: () {
+                      print(recipesIndex);
                       Navigator.pop(context);
                       write.createCustomMealPlanWithSwap(
                         weeklyPlan,
@@ -401,6 +402,8 @@ class _RecipeListState extends State<RecipeList> {
                         widget.userData!.children,
                       );
                       write.updateIngredients(recipe['ingredients'], widget.meal['ingredients']);
+                      Navigator.pop(context);
+
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange[700],
@@ -409,7 +412,7 @@ class _RecipeListState extends State<RecipeList> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       elevation: 0,
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
                         Icon(Icons.check, size: 18),

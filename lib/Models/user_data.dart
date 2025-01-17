@@ -4,6 +4,7 @@ class UserDataModel {
   final List<dynamic> recentRecipes;
   final List<dynamic> children;
   final bool custom;
+  final int swapped;
 
 
   UserDataModel({
@@ -12,6 +13,7 @@ class UserDataModel {
     required this.recentRecipes,
     required this.children,
     required this.custom,
+    required this.swapped,
   });
 
 
@@ -22,6 +24,7 @@ class UserDataModel {
       recentRecipes: List<String>.from(data['recent'] ?? []),
       children: List.from(data['children'] ?? ['adults']),
       custom: data['custom'] ?? false,
+      swapped: data['swapped'] ?? 0
     );
   }
 }

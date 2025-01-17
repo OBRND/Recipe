@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:meal/DataBase/fetch_db.dart';
+import 'package:meal/DataBase/state_mgt.dart';
 import 'package:meal/Models/meal_card.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:meal/Screens/profile.dart';
@@ -27,12 +28,17 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   List<Map<String, dynamic>> _cachedRecipes = [];
   late Future<List<Map<String, dynamic>>> _recipeFuture;
   bool _isLoading = false;
+  bool first = true;
+  int swapped = 0;
 
-  void _loadRecipes(uid, ageGroups, custom) {
+  void _loadRecipes(uid, ageGroups, custom, swap) {
     _recipeFuture = Fetch(uid: uid).getWeeklyPlan(ageGroups, custom).then((newRecipes) {
+      print('asdasdasdasdasdasdaaaaaaaaaaaaaaaaa');
       setState(() {
         _cachedRecipes = newRecipes;
         _isLoading = true;
+        swapped = swap;
+        first = false;
       });
       return newRecipes;
     }).catchError((_) {
@@ -60,8 +66,8 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                         Widget? child) {
                       return Profile(info: UserInfo!.children,);
                     },
-                  )),
-        );},
+                  )),);
+          },
             icon: Container(
             decoration: BoxDecoration(
               border: Border.all(
@@ -143,13 +149,13 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
               ),
             ),
           ),
-          Expanded(child: mealPlanWidget(context)),
+          Expanded(child: mealPlanWidget(context, swapped)),
         ],
       ),
     );
   }
 
-  Widget mealPlanWidget(BuildContext context) {
+  Widget mealPlanWidget(BuildContext context, int swapped) {
     final user = Provider.of<UserID>(context);
     final userInfo = Provider.of<UserDataModel?>(context);
     List<String> ageGroups = [];
@@ -164,201 +170,196 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
       ageGroups.add(userInfo.children[i]['ageGroups']);
     }
 
-    if(!_isLoading) {
-      _loadRecipes(user.uid, ageGroups, userInfo.custom);
+    if(!_isLoading || swapped < userInfo.swapped) {
+      _loadRecipes(user.uid, ageGroups, userInfo.custom, userInfo.swapped);
     }
       return SingleChildScrollView(
         child: FutureBuilder(
-          future: _recipeFuture,
-          builder: (context, snapshot) {
-            // Show loading indicator while fetching data
-            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isNotEmpty) {
-              final weeklyPlan = _cachedRecipes;
-              List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: mealTypes.map((mealType) {
-                  index = 0;
-                  // Extract all meals of the current type across all days and individuals
-                  List<Widget> mealWidgets = [];
+        future: _recipeFuture,
+        builder: (context, snapshot) {
+          // Show loading indicator while fetching data
+          if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isNotEmpty) {
+            final weeklyPlan = _cachedRecipes;
+            List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: mealTypes.map((mealType) {
+                index = 0;
+                // Extract all meals of the current type across all days and individuals
+                List<Widget> mealWidgets = [];
 
-                  weeklyPlan.forEach((dayData) {
-                    final mealsForDay = dayData["$selected"] as List<dynamic>;
-                    final mealsOfType = mealsForDay.where((meal) =>
-                    meal['mealType'] == mealType.toLowerCase())
-                        .toList();
+                weeklyPlan.forEach((dayData) {
+                  final mealsForDay = dayData["$selected"] as List<dynamic>;
+                  final mealsOfType = mealsForDay.where((meal) =>
+                  meal['mealType'] == mealType.toLowerCase()).toList();
 
-                    mealsOfType.forEach((meal) {
-                      index ++;
-                      mealWidgets.add(
-                          Dismissible(
-                            key: UniqueKey(),
-                            // Each Dismissible widget needs a unique key
-                            direction: DismissDirection.endToStart,
-                            // Specify swipe direction
-                            onDismissed: (direction) {
-                              print('---------');
-                              print(weeklyPlan.indexOf(dayData));
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        RecipeList(
-                                            recipes: weeklyPlan,
-                                            userData: userInfo,
-                                            swap: true,
-                                            index: mealType == 'breakfast' ? 0 :
-                                            mealType == 'lunch' ? 1 :
-                                            mealType == 'dinner' ? 2 : 3,
-                                            meal: meal,
-                                            day: selected,
-                                            child: weeklyPlan.indexOf(dayData),
-                                            name: ageGroups
-                                        )),
-                              );
-                            },
-                            background: Container(
-                              color: Colors.white, // Background color when swiped
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20.0),
-                              alignment: Alignment.centerRight,
-                              child: const Icon(
-                                Icons.swap_horiz,
-                                color: Colors.orange,
-                                size: 32,
-                              ),
+                  mealsOfType.forEach((meal) {
+                    index ++;
+                    mealWidgets.add(
+                        Dismissible(
+                          key: UniqueKey(),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (direction) {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      RecipeList(
+                                          recipes: weeklyPlan,
+                                          userData: userInfo,
+                                          swap: true,
+                                          index: mealType == 'breakfast' ? 0 :
+                                          mealType == 'lunch' ? 1 :
+                                          mealType == 'dinner' ? 2 : 3,
+                                          meal: meal,
+                                          day: selected,
+                                          child: weeklyPlan.indexOf(dayData),
+                                          name: ageGroups
+                                      )),
+                            );
+                          },
+                          background: Container(
+                            color: Colors.white, // Background color when swiped
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0),
+                            alignment: Alignment.centerRight,
+                            child: const Icon(
+                              Icons.swap_horiz,
+                              color: Colors.orange,
+                              size: 32,
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2.0),
-                              child: MealCard(meal: meal, home: true, index: index),
-                            ),
-                          )
-                      );
-                    }
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2.0),
+                            child: MealCard(meal: meal, home: true, index: index),
+                          ),
+                        )
                     );
                   }
                   );
+                }
+                );
 
-                  // Only display the meal type if there are meals under it
-                  return mealWidgets.isNotEmpty
-                      ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                        child: Text(
-                          mealType,
-                          style: const TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
-                          ),
+                // Only display the meal type if there are meals under it
+                return mealWidgets.isNotEmpty
+                    ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      child: Text(
+                        mealType,
+                        style: const TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      ...mealWidgets,
-                    ],
-                  )
-                      : const SizedBox.shrink();
-                }).toList(),
-              );;
-            }
-            // Check if there's an error
-            if (snapshot.hasError) {
-              return const Center(child: Text('Error loading meal plan.'));//make an alert dialogue box of this error  loading text
-            }
+                    ),
+                    ...mealWidgets,
+                  ],
+                )
+                    : const SizedBox.shrink();
+              }).toList(),
+            );
+          }
+          // Check if there's an error
+          if (snapshot.hasError) {
+            return const Center(child: Text('Error loading meal plan.'));//make an alert dialogue box of this error  loading text
+          }
 
-            // Check if data is available
-            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              final weeklyPlan = snapshot.data!;
-              List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
-              print(snapshot.data);
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: mealTypes.map((mealType) {
-                  index = 0;
-                  // Extract all meals of the current type across all days and individuals
-                  List<Widget> mealWidgets = [];
+          // Check if data is available
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            final weeklyPlan = snapshot.data!;
+            List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
+            print(snapshot.data);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: mealTypes.map((mealType) {
+                index = 0;
+                // Extract all meals of the current type across all days and individuals
+                List<Widget> mealWidgets = [];
 
-                  weeklyPlan.forEach((dayData) {
-                    final mealsForDay = dayData["$selected"] as List<dynamic>;
-                    final mealsOfType = mealsForDay.where((meal) =>
-                    meal['mealType'] == mealType.toLowerCase()).toList();
+                weeklyPlan.forEach((dayData) {
+                  final mealsForDay = dayData["$selected"] as List<dynamic>;
+                  final mealsOfType = mealsForDay.where((meal) =>
+                  meal['mealType'] == mealType.toLowerCase()).toList();
 
-                    mealsOfType.forEach((meal) {
-                      index ++;
-                      mealWidgets.add(
-                          Dismissible(
-                            key: UniqueKey(),
-                            direction: DismissDirection.endToStart,
-                            onDismissed: (direction) {
-                              print('---------');
-                              print(weeklyPlan.indexOf(dayData));
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        RecipeList(
-                                            recipes: weeklyPlan,
-                                            userData: userInfo,
-                                            swap: true,
-                                            index: mealType == 'breakfast' ? 1 :
-                                            mealType == 'lunch' ? 2 :
-                                            mealType == 'dinner' ? 3 : 4,
-                                            meal: meal,
-                                            day: selected,
-                                            child: weeklyPlan.indexOf(dayData),
-                                            name: ageGroups
-                                        )),
-                              );
-                            },
-                            background: Container(
-                              color: Colors.white, // Background color when swiped
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20.0),
-                              alignment: Alignment.centerRight,
-                              child: const Icon(
-                                Icons.swap_horiz,
-                                color: Colors.orange,
-                                size: 32,
-                              ),
+                  mealsOfType.forEach((meal) {
+                    index ++;
+                    mealWidgets.add(
+                        Dismissible(
+                          key: UniqueKey(),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (direction) {
+                            print('---------');
+                            print(weeklyPlan.indexOf(dayData));
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      RecipeList(
+                                          recipes: weeklyPlan,
+                                          userData: userInfo,
+                                          swap: true,
+                                          index: mealType == 'breakfast' ? 0 :
+                                          mealType == 'lunch' ? 1 :
+                                          mealType == 'dinner' ? 2 : 3,
+                                          meal: meal,
+                                          day: selected,
+                                          child: weeklyPlan.indexOf(dayData),
+                                          name: ageGroups
+                                      )),
+                            );
+                          },
+                          background: Container(
+                            color: Colors.white, // Background color when swiped
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0),
+                            alignment: Alignment.centerRight,
+                            child: const Icon(
+                              Icons.swap_horiz,
+                              color: Colors.orange,
+                              size: 32,
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2.0),
-                              child: MealCard(meal: meal, home: true, index: index),
-                            ),
-                          )
-                      );
-                    }
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2.0),
+                            child: MealCard(meal: meal, home: true, index: index),
+                          ),
+                        )
                     );
                   }
                   );
+                }
+                );
 
-                  return mealWidgets.isNotEmpty
-                      ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                        child: Text(
-                          mealType,
-                          style: const TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
-                          ),
+                return mealWidgets.isNotEmpty
+                    ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      child: Text(
+                        mealType,
+                        style: const TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      ...mealWidgets,
-                    ],
-                  )
-                      : const SizedBox.shrink();
-                }).toList(),
-              );
-            }
+                    ),
+                    ...mealWidgets,
+                  ],
+                )
+                    : const SizedBox.shrink();
+              }).toList(),
+            );
+          }
 
-            // Show a message if no meals are found
-            return const Center(child: Text('No meal plan found.'));
-          },
-        ),
+          // Show a message if no meals are found
+          return const Center(child: Text('No meal plan found.'));
+        },
+                    ),
       );
     }
 
