@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:meal/Screens/recipes/recipes.dart';
+import 'package:meal/Theme/app_theme.dart';
 
+import 'connectivity_scaffold.dart';
 import 'home.dart';
 import 'ideas/ideas.dart';
 
@@ -79,58 +81,60 @@ class _bottomNavState extends State<bottomNav> with SingleTickerProviderStateMix
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [PageView(
-          physics: const NeverScrollableScrollPhysics(),
-          controller: _controller,
-          children: const [
-            IdeasTab(),
-            MyHomePage(),
-            RecipeScreen(),
-          ],
+    return ConnectivityAwareScaffold(
+      child: Scaffold(
+        body: Stack(
+          children: [PageView(
+            physics: const NeverScrollableScrollPhysics(),
+            controller: _controller,
+            children: const [
+              IdeasTab(),
+              MyHomePage(),
+              RecipeScreen(),
+            ],
+          ),
+            if (_isAnimating)
+              SlideTransition(
+                position: _slideAnimation,
+                child: _listOfWidget[_selectedIndex],
+              )
+          ]
         ),
-          if (_isAnimating)
-            SlideTransition(
-              position: _slideAnimation,
-              child: _listOfWidget[_selectedIndex],
-            )
-        ]
-      ),
-      bottomNavigationBar: Container(
-        height: 55,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _NavBarItem(
-              icon: Icons.lightbulb_outline,
-              label: 'Ideas',
-              isSelected: _selectedIndex == 0,
-              onTap: () => _onItemSelected(0),
-            ),
-            _NavBarItem(
-              icon: Icons.home_outlined,
-              label: 'Home',
-              isSelected: _selectedIndex == 1,
-              onTap: () => _onItemSelected(1),
-            ),
-            _NavBarItem(
-              icon: Icons.restaurant_menu,
-              label: 'Recipes',
-              isSelected: _selectedIndex == 2,
-              onTap: () => _onItemSelected(2),
-            ),
-          ],
+        bottomNavigationBar: Container(
+          height: 55,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _NavBarItem(
+                icon: Icons.lightbulb_outline,
+                label: 'Ideas',
+                isSelected: _selectedIndex == 0,
+                onTap: () => _onItemSelected(0),
+              ),
+              _NavBarItem(
+                icon: Icons.home_outlined,
+                label: 'Home',
+                isSelected: _selectedIndex == 1,
+                onTap: () => _onItemSelected(1),
+              ),
+              _NavBarItem(
+                icon: Icons.restaurant_menu,
+                label: 'Recipes',
+                isSelected: _selectedIndex == 2,
+                onTap: () => _onItemSelected(2),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -189,7 +193,7 @@ class _NavBarItem extends StatelessWidget {
                     Text(
                       label,
                       style: TextStyle(
-                        color: Colors.orange[700],
+                        color: AppThemes.accentColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -199,7 +203,7 @@ class _NavBarItem extends StatelessWidget {
                       width: 5,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.orange[700],
+                        color: Color(0xDBF32607),
                         shape: BoxShape.circle,
                       ),
                     ),

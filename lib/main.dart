@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:meal/Auth/auth_service.dart';
 import 'package:meal/Models/user_id.dart';
 import 'package:meal/Screens/Wrapper.dart';
-import 'package:meal/Screens/bottom_nav.dart';
 import 'package:meal/Theme/app_theme.dart';
 import 'package:provider/provider.dart';
-
-import 'Theme/themeNotifier.dart';
+import 'Models/connection.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(
-    MyApp(),);
+    ChangeNotifierProvider(
+        create: (_) => ConnectivityNotifier(),
+        child: MyApp()),);
 }
 
 class MyApp extends StatefulWidget {
