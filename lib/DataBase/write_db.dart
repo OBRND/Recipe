@@ -436,7 +436,8 @@ class Write{
         'preferences' : selectedPreferences,
         'calories' : calories,
         'videoUrl' : videoUrl,
-        'id' : recipeId
+        'id' : recipeId,
+        'favoritesCount' : 0
       });
       await newRecipeUpdate(recipeId);
       print('Recipe saved successfully!');

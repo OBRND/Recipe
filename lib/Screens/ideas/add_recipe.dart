@@ -555,8 +555,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-
-                  // Submit Button
                   Center(
                     child: ElevatedButton(
                       onPressed: _saveForm,
@@ -576,7 +574,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   void submitRecipe() async {
     final user = Provider.of<UserID>(context, listen: false);
     Write write = Write(uid: user.uid);
-    print('-----------Here------------------');
     if (_selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select an image!')),

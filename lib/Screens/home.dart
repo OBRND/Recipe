@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:meal/DataBase/fetch_db.dart';
 import 'package:meal/DataBase/state_mgt.dart';
 import 'package:meal/Models/meal_card.dart';
@@ -9,6 +10,7 @@ import 'package:meal/Screens/profile.dart';
 import 'package:meal/Screens/recipes/recipe_list.dart';
 import 'package:meal/Screens/shopping_list.dart';
 import 'package:provider/provider.dart';
+import '../Models/connection.dart';
 import '../Models/user_id.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -32,28 +34,83 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   int swapped = 0;
 
   void _loadRecipes(uid, ageGroups, custom, swap) {
-    _recipeFuture = Fetch(uid: uid).getWeeklyPlan(ageGroups, custom).then((newRecipes) {
-      print('asdasdasdasdasdasdaaaaaaaaaaaaaaaaa');
-      setState(() {
-        _cachedRecipes = newRecipes;
-        _isLoading = true;
-        swapped = swap;
-        first = false;
+    print('reloaddddddddddddddddddddddddded');
+    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context);
+    final recipesBox = Hive.box('recipes');
+    final isOnline = connectivityNotifier.isConnected;
+
+    if (isOnline) {
+      _recipeFuture = Fetch(uid: uid).getWeeklyPlan(ageGroups, custom).then((newRecipes) {
+        setState(() {
+          _cachedRecipes = newRecipes;
+          _isLoading = true;
+          swapped = swap;
+          first = false;
+
+          // Save recipes to Hive
+          recipesBox.put('weeklyPlan', newRecipes);
+        });
+        return newRecipes;
+      }).catchError((_) async {
+        final box = await Hive.openBox('recipes');
+        final cachedData = box.get('cachedRecipes');
+
+        if (cachedData != null) {
+          setState(() {
+            _cachedRecipes = (cachedData as List)
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList();
+            _isLoading = true;
+          });
+          return _cachedRecipes;
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          return [];
+        }
       });
-      return newRecipes;
-    }).catchError((_) {
-      setState(() {
-        _isLoading = false;
-      });
-      return _cachedRecipes;
-    });
+    }
+    checkHiveDatabase();
   }
+
+  void checkHiveDatabase() async {
+    final box = await Hive.openBox('recipes'); // Open the Hive box
+    final storedData = box.get('weeklyPlan'); // Get the stored recipes
+
+    if (storedData != null) {
+      print("Stored Recipes in Hive:");
+      for (var recipe in storedData) {
+        print(recipe); // Display each recipe in the terminal
+      }
+    } else {
+      print("No recipes found in Hive.");
+    }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    checkHiveDatabase(); // Check and display stored recipes in the terminal
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final UserInfo = Provider.of<UserDataModel?>(context);
     final user = Provider.of<UserID>(context);
     super.build(context);
+    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context);
+    List<String> ageGroups = [];
+
+    for(int i = 0 ; i < UserInfo!.children.length; i++) {
+      UserInfo!.custom ? ageGroups.add(UserInfo.children[i]['name']) :
+      ageGroups.add(UserInfo.children[i]['ageGroups']);
+    }
+    if(!connectivityNotifier.isConnected){
+      _loadRecipes(user.uid, ageGroups, UserInfo?.custom, UserInfo?.swapped);
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -149,13 +206,13 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
               ),
             ),
           ),
-          Expanded(child: mealPlanWidget(context, swapped)),
+          Expanded(child: mealPlanWidget(context, swapped, selected)),
         ],
       ),
     );
   }
 
-  Widget mealPlanWidget(BuildContext context, int swapped) {
+  Widget mealPlanWidget(BuildContext context, int swapped, selected) {
     final user = Provider.of<UserID>(context);
     final userInfo = Provider.of<UserDataModel?>(context);
     List<String> ageGroups = [];
@@ -175,192 +232,113 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
     }
       return SingleChildScrollView(
         child: FutureBuilder(
-        future: _recipeFuture,
-        builder: (context, snapshot) {
-          // Show loading indicator while fetching data
-          if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isNotEmpty) {
-            final weeklyPlan = _cachedRecipes;
-            List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: mealTypes.map((mealType) {
-                index = 0;
-                // Extract all meals of the current type across all days and individuals
-                List<Widget> mealWidgets = [];
+          future: _recipeFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                weeklyPlan.forEach((dayData) {
-                  final mealsForDay = dayData["$selected"] as List<dynamic>;
-                  final mealsOfType = mealsForDay.where((meal) =>
-                  meal['mealType'] == mealType.toLowerCase()).toList();
+            // Use cached recipes while waiting for fresh data
+            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isNotEmpty) {
+              final weeklyPlan = _cachedRecipes;
+              return _buildMealPlanUI(weeklyPlan, ageGroups, userInfo, selected);
+            }
 
-                  mealsOfType.forEach((meal) {
-                    index ++;
-                    mealWidgets.add(
-                        Dismissible(
-                          key: UniqueKey(),
-                          direction: DismissDirection.endToStart,
-                          onDismissed: (direction) {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      RecipeList(
-                                          recipes: weeklyPlan,
-                                          userData: userInfo,
-                                          swap: true,
-                                          index: mealType == 'breakfast' ? 0 :
-                                          mealType == 'lunch' ? 1 :
-                                          mealType == 'dinner' ? 2 : 3,
-                                          meal: meal,
-                                          day: selected,
-                                          child: weeklyPlan.indexOf(dayData),
-                                          name: ageGroups
-                                      )),
-                            );
-                          },
-                          background: Container(
-                            color: Colors.white, // Background color when swiped
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20.0),
-                            alignment: Alignment.centerRight,
-                            child: const Icon(
-                              Icons.swap_horiz,
-                              color: Colors.orange,
-                              size: 32,
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2.0),
-                            child: MealCard(meal: meal, home: true, index: index),
-                          ),
-                        )
-                    );
-                  }
-                  );
-                }
-                );
+            // Handle errors
+            if (snapshot.hasError) {
+              return const Center(child: Text('Error loading meal plan.'));
+            }
 
-                // Only display the meal type if there are meals under it
-                return mealWidgets.isNotEmpty
-                    ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                      child: Text(
-                        mealType,
-                        style: const TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    ...mealWidgets,
-                  ],
-                )
-                    : const SizedBox.shrink();
-              }).toList(),
-            );
-          }
-          // Check if there's an error
-          if (snapshot.hasError) {
-            return const Center(child: Text('Error loading meal plan.'));//make an alert dialogue box of this error  loading text
-          }
-
-          // Check if data is available
-          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            final weeklyPlan = snapshot.data!;
-            List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
-            print(snapshot.data);
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: mealTypes.map((mealType) {
-                index = 0;
-                // Extract all meals of the current type across all days and individuals
-                List<Widget> mealWidgets = [];
-
-                weeklyPlan.forEach((dayData) {
-                  final mealsForDay = dayData["$selected"] as List<dynamic>;
-                  final mealsOfType = mealsForDay.where((meal) =>
-                  meal['mealType'] == mealType.toLowerCase()).toList();
-
-                  mealsOfType.forEach((meal) {
-                    index ++;
-                    mealWidgets.add(
-                        Dismissible(
-                          key: UniqueKey(),
-                          direction: DismissDirection.endToStart,
-                          onDismissed: (direction) {
-                            print('---------');
-                            print(weeklyPlan.indexOf(dayData));
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      RecipeList(
-                                          recipes: weeklyPlan,
-                                          userData: userInfo,
-                                          swap: true,
-                                          index: mealType == 'breakfast' ? 0 :
-                                          mealType == 'lunch' ? 1 :
-                                          mealType == 'dinner' ? 2 : 3,
-                                          meal: meal,
-                                          day: selected,
-                                          child: weeklyPlan.indexOf(dayData),
-                                          name: ageGroups
-                                      )),
-                            );
-                          },
-                          background: Container(
-                            color: Colors.white, // Background color when swiped
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20.0),
-                            alignment: Alignment.centerRight,
-                            child: const Icon(
-                              Icons.swap_horiz,
-                              color: Colors.orange,
-                              size: 32,
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2.0),
-                            child: MealCard(meal: meal, home: true, index: index),
-                          ),
-                        )
-                    );
-                  }
-                  );
-                }
-                );
-
-                return mealWidgets.isNotEmpty
-                    ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                      child: Text(
-                        mealType,
-                        style: const TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    ...mealWidgets,
-                  ],
-                )
-                    : const SizedBox.shrink();
-              }).toList(),
-            );
-          }
-
-          // Show a message if no meals are found
-          return const Center(child: Text('No meal plan found.'));
-        },
-                    ),
+            // Load data if available
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              final weeklyPlan = snapshot.data!;
+              return _buildMealPlanUI(weeklyPlan, ageGroups, userInfo, selected);
+            } else if (_cachedRecipes.isNotEmpty) {
+              // Use cached recipes if available
+              final weeklyPlan = _cachedRecipes;
+              return _buildMealPlanUI(weeklyPlan, ageGroups, userInfo, selected);
+            } else {
+              return const Center(child: Text('No meal plan found.'));
+            }
+          },
+        )
       );
     }
+
+  Widget _buildMealPlanUI(
+      List<Map<String, dynamic>> weeklyPlan,
+      List<String> ageGroups,
+      UserDataModel userInfo,
+      int selected,
+      ) {
+    List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
+    int index = 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: mealTypes.map((mealType) {
+        index = 0;
+        List<Widget> mealWidgets = [];
+
+        weeklyPlan.forEach((dayData) {
+          final mealsForDay = dayData["$selected"] as List<dynamic>;
+          final mealsOfType = mealsForDay.where((meal) => meal['mealType'] == mealType.toLowerCase()).toList();
+
+          mealsOfType.forEach((meal) {
+            index++;
+            mealWidgets.add(
+              Dismissible(
+                key: UniqueKey(),
+                direction: DismissDirection.endToStart,
+                onDismissed: (direction) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => RecipeList(
+                        recipes: weeklyPlan,
+                        userData: userInfo,
+                        swap: true,
+                        index: mealType == 'breakfast' ? 0 : mealType == 'lunch' ? 1 : mealType == 'dinner' ? 2 : 3,
+                        meal: meal,
+                        day: selected,
+                        child: weeklyPlan.indexOf(dayData),
+                        name: ageGroups,
+                      ),
+                    ),
+                  );
+                },
+                background: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  alignment: Alignment.centerRight,
+                  child: const Icon(Icons.swap_horiz, color: Colors.orange, size: 32),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2.0),
+                  child: MealCard(meal: meal, home: true, index: index),
+                ),
+              ),
+            );
+          });
+        });
+
+        return mealWidgets.isNotEmpty
+            ? Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+              child: Text(
+                mealType,
+                style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ...mealWidgets,
+          ],
+        )
+            : const SizedBox.shrink();
+      }).toList(),
+    );
+  }
+
 
 }

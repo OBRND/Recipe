@@ -192,7 +192,7 @@ class _NavBarItem extends StatelessWidget {
                   children: [
                     Text(
                       label,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppThemes.accentColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -202,7 +202,7 @@ class _NavBarItem extends StatelessWidget {
                     Container(
                       width: 5,
                       height: 5,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Color(0xDBF32607),
                         shape: BoxShape.circle,
                       ),

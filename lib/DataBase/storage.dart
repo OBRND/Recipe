@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import '../Keys.dart';
@@ -29,6 +30,29 @@ Future<String?> uploadImage(File imageFile) async {
     print('Error uploading image: $e');
     return null; // Return null if upload fails
   }
+}
+
+Future<void> saveImageLocally(String recipeId, String imageUrl) async {
+  final box = Hive.box('images');
+  final appDir = Directory.systemTemp.path;
+
+  // Define image path
+  final imagePath = '$appDir/$recipeId.png';
+
+  if (!File(imagePath).existsSync()) {
+    // Download and save the image
+    final response = await http.get(Uri.parse(imageUrl));
+    if (response.statusCode == 200) {
+      final file = File(imagePath);
+      await file.writeAsBytes(response.bodyBytes);
+      box.put(recipeId, imagePath); // Save path in Hive
+    }
+  }
+}
+
+Future<String?> getImagePath(String recipeId) async {
+  final box = Hive.box('images');
+  return box.get(recipeId) as String?;
 }
 
 
