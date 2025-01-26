@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:meal/Models/user_id.dart';
 import 'package:provider/provider.dart';
+import '../DataBase/storage.dart';
 import '../DataBase/write_db.dart';
 import '../Screens/recipes/recipe_details.dart';
 import 'color_model.dart';
@@ -22,7 +25,23 @@ class MealCard extends StatefulWidget {
 class _MealCardState extends State<MealCard> {
   bool clicked = false;
   bool? temporarySavedState;
+  Uint8List? _imageData;
 
+
+  void _loadImage() async {
+    final imageData = await fetchImage(widget.meal['id'], resizeImageUrl(widget.meal['imageUrl']));
+    if (mounted) {
+      setState(() {
+        _imageData = imageData;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImage();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,16 +178,17 @@ class _MealCardState extends State<MealCard> {
                       elevation: 5,
                       margin: EdgeInsets.all(0),
                       child: Container(
-                        width: MediaQuery
-                            .sizeOf(context)
-                            .width / 2.8,
+                        width: MediaQuery.sizeOf(context).width / 2.8,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(
-                              12)),
-                          image: DecorationImage(
-                            fit: BoxFit.fitWidth,
-                            image: NetworkImage(
-                                resizeImageUrl(widget.meal['imageUrl'])),
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          image: _imageData != null
+                              ? DecorationImage(
+                            fit: BoxFit.fill,
+                            image: MemoryImage(_imageData!),
+                          )
+                              : DecorationImage(
+                            fit: BoxFit.fill,
+                            image: NetworkImage(resizeImageUrl(widget.meal['imageUrl'])),
                           ),
                         ),
                       ),
@@ -195,11 +215,17 @@ class _MealCardState extends State<MealCard> {
                margin: EdgeInsets.all(0),
                child: Container(
                  width: MediaQuery.sizeOf(context).width / 2.8,
-                 height: MediaQuery.sizeOf(context).width / 2.8,
-                 child: CachedNetworkImage(
-                   imageUrl: resizeImageUrl(widget.meal['imageUrl']),
-                   placeholder: (context, url) => CircularProgressIndicator(),
-                   errorWidget: (context, url, error) => Icon(Icons.error),
+                 decoration: BoxDecoration(
+                   borderRadius: BorderRadius.all(Radius.circular(12)),
+                   image: _imageData != null
+                       ? DecorationImage(
+                     fit: BoxFit.fill,
+                     image: MemoryImage(_imageData!),
+                   )
+                       : DecorationImage(
+                     fit: BoxFit.fill,
+                     image: NetworkImage(resizeImageUrl(widget.meal['imageUrl'])),
+                   ),
                  ),
                ),
              ),

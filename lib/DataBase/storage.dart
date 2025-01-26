@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import '../Keys.dart';
+import '../Models/user_data.dart';
 
 Future<String?> uploadImage(File imageFile) async {
   // Replace with your Cloudinary cloud name
@@ -32,27 +34,44 @@ Future<String?> uploadImage(File imageFile) async {
   }
 }
 
-Future<void> saveImageLocally(String recipeId, String imageUrl) async {
-  final box = Hive.box('images');
-  final appDir = Directory.systemTemp.path;
+Future<Uint8List?> fetchImage(String recipeId, String imageUrl) async {
+  final imageBox = Hive.box('images');
 
-  // Define image path
-  final imagePath = '$appDir/$recipeId.png';
+  // Check if the image is in the local database
+  if (imageBox.containsKey(recipeId)) {
+    print('Image found in local database for recipe ID: $recipeId');
+    return imageBox.get(recipeId);
+  }
 
-  if (!File(imagePath).existsSync()) {
-    // Download and save the image
+  // If not found and the app is online, fetch the image
+  try {
     final response = await http.get(Uri.parse(imageUrl));
     if (response.statusCode == 200) {
-      final file = File(imagePath);
-      await file.writeAsBytes(response.bodyBytes);
-      box.put(recipeId, imagePath); // Save path in Hive
+      final imageBytes = response.bodyBytes;
+
+      // Save the image in the Hive database
+      imageBox.put(recipeId, imageBytes);
+      print('Image saved to local database for recipe ID: $recipeId');
+      return imageBytes;
+    } else {
+      print('Failed to fetch image for recipe ID: $recipeId');
     }
+  } catch (e) {
+    print('Error fetching image for recipe ID: $recipeId - $e');
   }
+
+  return null;
+}
+Future<void> saveUserInfoToHive(UserDataModel userInfo) async {
+  final box = await Hive.openBox<UserDataModel>('userBox');
+  await box.put('userInfo', userInfo);
+  
+  Future<UserDataModel?> fetchUserInfoFromHive() async {
+    final box = await Hive.openBox<UserDataModel>('userBox');
+    return box.get('userInfo');
+  }
+
 }
 
-Future<String?> getImagePath(String recipeId) async {
-  final box = Hive.box('images');
-  return box.get(recipeId) as String?;
-}
 
 

@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:meal/DataBase/write_db.dart';
 import 'package:provider/provider.dart';
+import '../../DataBase/storage.dart';
 import '../../Models/user_id.dart';
 
 class RecipeDetailsPage extends StatefulWidget {
@@ -28,6 +31,18 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
   late AnimationController _controller;
   bool pressed = false;
   bool updatedRecent = false;
+  Uint8List? _imageData;
+
+
+  void _loadImage() async {
+    final imageData = await fetchImage(widget.recipeID, widget.imageURL);
+    if (mounted) {
+      setState(() {
+        _imageData = imageData;
+      });
+    }
+  }
+
 
   @override
   void initState() {
@@ -38,6 +53,7 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
       lowerBound: 1, // Slightly smaller scale
       upperBound: 1.5, // Slightly larger scale
     );
+    _loadImage();
   }
 
 
@@ -111,11 +127,14 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
             height: 250,
             width: double.infinity,
             decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(widget.imageURL),
+              image: _imageData != null
+                  ? DecorationImage(
                 fit: BoxFit.cover,
+                image: MemoryImage(_imageData!),
+              ) : DecorationImage(
+                  fit: BoxFit.cover,
+                image: NetworkImage(widget.imageURL)),
               ),
-            ),
             child: Container(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,

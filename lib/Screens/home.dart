@@ -35,11 +35,12 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
   void _loadRecipes(uid, ageGroups, custom, swap) {
     print('reloaddddddddddddddddddddddddded');
-    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context);
+    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context, listen: false);
     final recipesBox = Hive.box('recipes');
     final isOnline = connectivityNotifier.isConnected;
 
     if (isOnline) {
+      // Online: Fetch from Firebase
       _recipeFuture = Fetch(uid: uid).getWeeklyPlan(ageGroups, custom).then((newRecipes) {
         setState(() {
           _cachedRecipes = newRecipes;
@@ -51,37 +52,47 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
           recipesBox.put('weeklyPlan', newRecipes);
         });
         return newRecipes;
-      }).catchError((_) async {
-        final box = await Hive.openBox('recipes');
-        final cachedData = box.get('cachedRecipes');
-
+      }).catchError((_) {
+        setState(() {
+          _isLoading = true;
+        });
+        return _cachedRecipes;
+      });
+    } else {
+      // Offline: Load from Hive
+      final cachedData = recipesBox.get('weeklyPlan');
+      _recipeFuture = Future(() {
         if (cachedData != null) {
-          setState(() {
-            _cachedRecipes = (cachedData as List)
-                .map((e) => Map<String, dynamic>.from(e as Map))
-                .toList();
-            _isLoading = true;
-          });
-          return _cachedRecipes;
+          return (cachedData as List)
+              .map((item) => Map<String, dynamic>.from(item as Map))
+              .toList();
         } else {
-          setState(() {
-            _isLoading = false;
-          });
-          return [];
+          return <Map<String, dynamic>>[]; // Return an empty list if no cached data
         }
+      }).then((cachedRecipes) {
+        setState(() {
+          _cachedRecipes = cachedRecipes;
+          _isLoading = true;
+          if(first){
+            first = false;
+          }
+        });
+        return cachedRecipes;
       });
     }
-    checkHiveDatabase();
+
+    // checkHiveDatabase();
   }
 
+
   void checkHiveDatabase() async {
-    final box = await Hive.openBox('recipes'); // Open the Hive box
-    final storedData = box.get('weeklyPlan'); // Get the stored recipes
+    final box = await Hive.openBox('recipes');
+    final storedData = box.get('weeklyPlan');
 
     if (storedData != null) {
       print("Stored Recipes in Hive:");
       for (var recipe in storedData) {
-        print(recipe); // Display each recipe in the terminal
+        print(recipe);
       }
     } else {
       print("No recipes found in Hive.");
@@ -92,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    checkHiveDatabase(); // Check and display stored recipes in the terminal
+    // checkHiveDatabase(); // Check and display stored recipes in the terminal
   }
 
 
@@ -103,12 +114,12 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
     super.build(context);
     final connectivityNotifier = Provider.of<ConnectivityNotifier>(context);
     List<String> ageGroups = [];
-
+    print(UserInfo?.name.toString());
     for(int i = 0 ; i < UserInfo!.children.length; i++) {
       UserInfo!.custom ? ageGroups.add(UserInfo.children[i]['name']) :
       ageGroups.add(UserInfo.children[i]['ageGroups']);
     }
-    if(!connectivityNotifier.isConnected){
+    if(first && !connectivityNotifier.isConnected){
       _loadRecipes(user.uid, ageGroups, UserInfo?.custom, UserInfo?.swapped);
     };
 
@@ -216,6 +227,8 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
     final user = Provider.of<UserID>(context);
     final userInfo = Provider.of<UserDataModel?>(context);
     List<String> ageGroups = [];
+    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context, listen: false);
+    final isOnline = connectivityNotifier.isConnected;
 
     if (userInfo == null) {
       // Show a loading indicator while waiting for the user data.
@@ -227,14 +240,14 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
       ageGroups.add(userInfo.children[i]['ageGroups']);
     }
 
-    if(!_isLoading || swapped < userInfo.swapped) {
+    if((!_isLoading || swapped < userInfo.swapped) && isOnline) {
       _loadRecipes(user.uid, ageGroups, userInfo.custom, userInfo.swapped);
     }
       return SingleChildScrollView(
         child: FutureBuilder(
           future: _recipeFuture,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isEmpty) {
+            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isEmpty && snapshot.data == []) {
               return const Center(child: CircularProgressIndicator());
             }
 

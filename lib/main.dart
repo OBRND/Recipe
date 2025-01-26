@@ -14,6 +14,7 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('recipes');
   await Hive.openBox('images');
+  await Hive.openBox('userData');
   runApp(
     ChangeNotifierProvider(
         create: (_) => ConnectivityNotifier(),
