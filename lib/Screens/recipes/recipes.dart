@@ -292,7 +292,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
     final user = Provider.of<UserID>(context);
 
     return StreamBuilder<UserDataModel?>(
-      stream: userStream(user.uid),
+      stream: userDataStream(user.uid),
       builder: (context, snapshot) {
         
         if (snapshot.hasError) {

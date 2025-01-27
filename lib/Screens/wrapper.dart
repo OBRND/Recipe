@@ -20,7 +20,7 @@ class AuthWrapper extends StatelessWidget {
 
     return StreamProvider<UserDataModel?>.value(
         lazy: false,
-        value: userStream(user.uid),
+        value: userDataStream(user.uid),
         initialData: null,
         catchError: (_, __) => null,
         builder: (context, child) {

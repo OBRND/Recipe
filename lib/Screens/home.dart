@@ -56,12 +56,15 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
         setState(() {
           _isLoading = true;
         });
+        print('+++++++++++++++++++++++++++++++');
+        print(_cachedRecipes.toString());
+        print('+++++++++++++++++++++++++++++++');
         return _cachedRecipes;
       });
     } else {
       // Offline: Load from Hive
       final cachedData = recipesBox.get('weeklyPlan');
-      _recipeFuture = Future(() {
+      _recipeFuture = Future(() async{
         if (cachedData != null) {
           return (cachedData as List)
               .map((item) => Map<String, dynamic>.from(item as Map))
@@ -114,7 +117,9 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
     super.build(context);
     final connectivityNotifier = Provider.of<ConnectivityNotifier>(context);
     List<String> ageGroups = [];
-    print(UserInfo?.name.toString());
+    if (UserInfo == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     for(int i = 0 ; i < UserInfo!.children.length; i++) {
       UserInfo!.custom ? ageGroups.add(UserInfo.children[i]['name']) :
       ageGroups.add(UserInfo.children[i]['ageGroups']);
@@ -247,14 +252,14 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
         child: FutureBuilder(
           future: _recipeFuture,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isEmpty && snapshot.data == []) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // Show cached recipes while waiting for fresh data
+              if (_cachedRecipes.isNotEmpty) {
+                final weeklyPlan = _cachedRecipes;
+                return _buildMealPlanUI(weeklyPlan, ageGroups, userInfo, selected);
+              }
+              // If no cached data, show loading indicator
               return const Center(child: CircularProgressIndicator());
-            }
-
-            // Use cached recipes while waiting for fresh data
-            if (snapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isNotEmpty) {
-              final weeklyPlan = _cachedRecipes;
-              return _buildMealPlanUI(weeklyPlan, ageGroups, userInfo, selected);
             }
 
             // Handle errors
@@ -263,16 +268,18 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
             }
 
             // Load data if available
-            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            if (snapshot.hasData && snapshot.data != null) {
               final weeklyPlan = snapshot.data!;
               return _buildMealPlanUI(weeklyPlan, ageGroups, userInfo, selected);
-            } else if (_cachedRecipes.isNotEmpty) {
-              // Use cached recipes if available
+            }
+
+            // Fallback to cached data if available
+            if (_cachedRecipes.isNotEmpty) {
               final weeklyPlan = _cachedRecipes;
               return _buildMealPlanUI(weeklyPlan, ageGroups, userInfo, selected);
-            } else {
-              return const Center(child: Text('No meal plan found.'));
             }
+
+            return const Center(child: Text('No meal plan found.'));
           },
         )
       );

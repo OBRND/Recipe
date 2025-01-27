@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
@@ -62,16 +63,48 @@ Future<Uint8List?> fetchImage(String recipeId, String imageUrl) async {
 
   return null;
 }
-Future<void> saveUserInfoToHive(UserDataModel userInfo) async {
-  final box = await Hive.openBox<UserDataModel>('userBox');
-  await box.put('userInfo', userInfo);
-  
-  Future<UserDataModel?> fetchUserInfoFromHive() async {
-    final box = await Hive.openBox<UserDataModel>('userBox');
-    return box.get('userInfo');
+
+Future<UserDataModel?> getUserDataFromHive() async {
+  final userBox = Hive.box('userData');
+  final cachedData = userBox.get('userInfo');
+
+  if (cachedData != null) {
+    return UserDataModel.fromMap(Map<String, dynamic>.from(cachedData));
+  }
+  return null; // No data found in Hive
+}
+
+Future<UserDataModel?> fetchUserData(String userId) async {
+  final userBox = Hive.box('userData');
+
+  try {
+    // Try to fetch from Hive first
+    final offlineData = await getUserDataFromHive();
+    if (offlineData != null) {
+      return offlineData;
+    }
+
+    // If no data in Hive, fetch from Firestore
+    final snapshot = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .get();
+
+    if (snapshot.exists) {
+      final userData = UserDataModel.fromMap(snapshot.data()!);
+
+      // Save fetched data to Hive
+      userBox.put('userInfo', userData.toMap());
+
+      return userData;
+    }
+  } catch (e) {
+    print('Error fetching user data: $e');
   }
 
+  return null;
 }
+
 
 
 

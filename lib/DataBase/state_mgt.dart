@@ -1,20 +1,29 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
 import '../Models/user_data.dart';
 
-Stream<UserDataModel?> userStream(String userId) {
+Stream<UserDataModel?> userDataStream(String uid) async* {
   final userBox = Hive.box('userData');
-  return FirebaseFirestore.instance.collection('Users').doc(userId)
-      .snapshots().map((snapshot) {
 
+  // Load from Hive first
+  final cachedData = userBox.get('userInfo');
+  if (cachedData != null) {
+    yield UserDataModel.fromMap(Map<String, dynamic>.from(cachedData));
+  }
+
+  // Listen to Firebase for updates
+  await for (var snapshot in FirebaseFirestore.instance.collection('Users').doc(uid).snapshots()) {
     if (snapshot.exists) {
       final userData = UserDataModel.fromMap(snapshot.data()!);
+
+      // Cache the latest data in Hive
       userBox.put('userInfo', userData.toMap());
-      return userData;
+      print('==============================');
+      print(cachedData.toString());
+      print('==============================');
+      yield userData; // Emit the updated user data
     }
-    return null;
-  });
+  }
 }
 
 Stream<DocumentSnapshot?> Shopping(String uid) {
