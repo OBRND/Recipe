@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:meal/Models/user_id.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +30,7 @@ class _MealCardState extends State<MealCard> {
 
 
   void _loadImage() async {
-    final imageData = await fetchImage(widget.meal['id'], resizeImageUrl(widget.meal['imageUrl']));
+    Uint8List? imageData = await fetchImage(widget.meal['id'], resizeImageUrl(widget.meal['imageUrl']));
     if (mounted) {
       setState(() {
         _imageData = imageData;
@@ -44,6 +45,15 @@ class _MealCardState extends State<MealCard> {
   }
 
   @override
+  void didUpdateWidget(covariant MealCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload the image if the meal or its image URL changes
+    if (widget.meal['imageUrl'] != oldWidget.meal['imageUrl']) {
+      _loadImage();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userInfo = Provider.of<UserDataModel?>(context);
     final user = Provider.of<UserID>(context);
@@ -51,6 +61,18 @@ class _MealCardState extends State<MealCard> {
 
     return InkWell(
       onTap: () {
+        final updatedUserData = Hive.box('userData').get('userInfo');
+        print('*******************************');
+        print(updatedUserData.toString());
+        print('*******************************');
+
+        if (updatedUserData != null) {
+          Provider.of<UserDataModel>(context, listen: false).updateUserData(
+            uid: user.uid,
+            recipeId: widget.meal['id'],
+            isRecent: true,
+          );
+        }
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (BuildContext context) =>

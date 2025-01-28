@@ -64,46 +64,35 @@ Future<Uint8List?> fetchImage(String recipeId, String imageUrl) async {
   return null;
 }
 
-Future<UserDataModel?> getUserDataFromHive() async {
-  final userBox = Hive.box('userData');
-  final cachedData = userBox.get('userInfo');
+Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(List<String> recipeIds) async {
+  final recipesBox = Hive.box('recipes');
+  List<Map<String, dynamic>> recipes = [];
 
-  if (cachedData != null) {
-    return UserDataModel.fromMap(Map<String, dynamic>.from(cachedData));
-  }
-  return null; // No data found in Hive
-}
-
-Future<UserDataModel?> fetchUserData(String userId) async {
-  final userBox = Hive.box('userData');
-
-  try {
-    // Try to fetch from Hive first
-    final offlineData = await getUserDataFromHive();
-    if (offlineData != null) {
-      return offlineData;
-    }
-
-    // If no data in Hive, fetch from Firestore
-    final snapshot = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(userId)
-        .get();
-
-    if (snapshot.exists) {
-      final userData = UserDataModel.fromMap(snapshot.data()!);
-
-      // Save fetched data to Hive
-      userBox.put('userInfo', userData.toMap());
-
-      return userData;
-    }
-  } catch (e) {
-    print('Error fetching user data: $e');
+  // Check if there are any recipe IDs to process
+  if (recipeIds.isEmpty) {
+    print("No data");
+    return [];
   }
 
-  return null;
+  // Retrieve recipe details from Hive
+  for (String id in recipeIds) {
+    final recipeDetails = recipesBox.get(id); // Fetch recipe by ID from Hive
+    if (recipeDetails != null) {
+      recipes.add({
+        'id': id,
+        'name': recipeDetails['name'],
+        'cal': recipeDetails['cal'],
+        'ingredients': recipeDetails['ingredients'],
+        'cookingTime': recipeDetails['cookingTime'],
+        'imageUrl': recipeDetails['imageUrl'],
+        'favoritesCount': recipeDetails['favoritesCount'],
+      });
+    }
+  }
+
+  return recipes;
 }
+
 
 
 
