@@ -17,11 +17,10 @@ class RecipeScreen extends StatefulWidget {
   State<RecipeScreen> createState() => _RecipeScreenState();
 }
 
-class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin{
+class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
   late ScrollController _scrollController;
   final ValueNotifier<double> _opacityNotifier = ValueNotifier(0.0);
-  static const Color accentColor = Color(0xDBF32607); // International Orange
   final List<Map<String, dynamic>> categories = [
     {'name': 'All Recipes', 'icon': Icons.restaurant_menu, 'gradient': [Colors.blue[50]!, Colors.blue[100]!]},
     {'name': 'Breakfast', 'icon': Icons.breakfast_dining, 'gradient': [Colors.orange[50]!, Colors.orange[100]!]},
@@ -37,96 +36,34 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
     _tabController = TabController(length: 2, vsync: this);
     _scrollController = ScrollController()
       ..addListener(() {
-        // Update the opacity based on scroll position without rebuilding the entire widget
         double offset = _scrollController.offset;
         double maxScroll = _scrollController.position.maxScrollExtent;
         double newOpacity = (offset / maxScroll).clamp(0.0, 1.0);
-
         _opacityNotifier.value = newOpacity;
       });
   }
-  List<Map<String, dynamic>> _cachedRecipes = [];
-  List<Map<String, dynamic>> _cachedRecipes2 = [];
-  List savedRecipes = [];
-  late Future<dynamic> _recipeFuture;
-  late Future<dynamic> _recipeFuture2;
-  bool _isLoading = true;
 
-  void _loadRecipes(String uid, bool isRecentlyViewed, UserDataModel userData) {
-    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context, listen: false);
-    final userBox = Hive.box('userData');
-    var userInfo = userBox.get('userInfo');
-    final isOnline = connectivityNotifier.isConnected;
-    final List recipeIds = isRecentlyViewed ? userData.recentRecipes : userData.savedRecipes;
-
-    if (isOnline) {
-      print(userInfo.toString());
-      // Online: Fetch recipes from Firebase
-      final future = Fetch(uid: uid).getSavedRecipes(recipeIds).then((newRecipes) {
-        setState(() {
-          if (isRecentlyViewed) {
-            _cachedRecipes = newRecipes;
-          } else {
-            _cachedRecipes2 = newRecipes;
-            savedRecipes = recipeIds;
-          }
-
-          // Save recipes to Hive
-          final hiveKey = isRecentlyViewed ? 'recentRecipes' : 'savedRecipes';
-          userInfo.put(hiveKey, newRecipes);
-          _isLoading = false;
-        });
-        return newRecipes;
-      }).catchError((_) {
-        setState(() {
-          _isLoading = false;
-        });
-        return isRecentlyViewed ? _cachedRecipes : _cachedRecipes2;
-      });
-
-      if (isRecentlyViewed) {
-        _recipeFuture = future;
-      } else {
-        _recipeFuture2 = future;
-      }
-    } else {
-      // Offline: Load recipes from Hive
-      final hiveKey = isRecentlyViewed ? 'recentRecipes' : 'savedRecipes';
-      final cachedData = userInfo[hiveKey];
-      final future = Future(() async {
-        if (cachedData != null) {
-          print( await getSavedRecipesFromHive(cachedData));
-          return await getSavedRecipesFromHive(cachedData);
-          // return cachedData;
-        } else {
-          return <Map<String, dynamic>>[]; // Return an empty list if no cached data
-        }
-      }).then((cachedRecipes) {
-        setState(() {
-          if (isRecentlyViewed) {
-            _cachedRecipes = cachedRecipes;
-          } else {
-            _cachedRecipes2 = cachedRecipes;
-          }
-          _isLoading = false;
-        });
-        return cachedRecipes;
-      });
-
-      if (isRecentlyViewed) {
-        _recipeFuture = future;
-      } else {
-        _recipeFuture2 = future;
-      }
+  Future<List<Map<String, dynamic>>> getRecipeDetails(UserDataModel? userData, bool isRecentlyViewed) async {
+    if (userData == null) {
+      return [];
     }
-  }
 
+    final recipeIds = isRecentlyViewed ? userData.recentRecipes : userData.savedRecipes;
+
+    if (recipeIds.isEmpty) {
+      return [];
+    }
+
+    // Fetch additional recipe details from Hive
+    final recipes = await getSavedRecipesFromHive(recipeIds);
+    return recipes;
+  }
 
   @override
   void dispose() {
     _tabController.dispose();
     _scrollController.dispose();
-    _opacityNotifier.dispose();  // Dispose of the notifier
+    _opacityNotifier.dispose();
     super.dispose();
   }
 
@@ -136,15 +73,12 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserID>(context);
-    final userData = Provider.of<UserDataModel?>(context);
-    super.build(context);
-    if(_isLoading){
-      print('[]]s[d]s[d]s[d]s[d]s[d][s]');
-      print(userData?.recentRecipes.toString());
-      print('[]]s[d]s[d]s[d]s[d]s[d][s]');
-      _loadRecipes(user.uid, true, userData!);
-      _loadRecipes(user.uid, false, userData);
+    final userData = context.watch<UserDataModel?>();
+
+    if (userData == null) {
+      return Center(child: Text('No user data available'));
     }
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: NestedScrollView(
@@ -155,7 +89,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
             elevation: 0,
             floating: true,
             pinned: true,
-            expandedHeight: MediaQuery.sizeOf(context).width * 2/3 + 90,
+            expandedHeight: MediaQuery.sizeOf(context).width * 2 / 3 + 90,
             toolbarHeight: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: AnimatedBuilder(
@@ -175,25 +109,23 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
                               child: const Text(
                                 'Recipe Collection',
                                 style: TextStyle(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
                                 ),
                               ),
                             ),
                             Expanded(child: _buildCategories()),
-                            SizedBox(
-                              height: 60,
-                            )
+                            const SizedBox(height: 60),
                           ],
                         ),
                         IgnorePointer(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Color(0xFFFAE4DD).withOpacity(opacity),  // Transition color
+                              color: const Color(0xFFFAE4DD).withOpacity(opacity),
                             ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   );
@@ -203,10 +135,10 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(50),
               child: AnimatedBuilder(
-                  animation: _opacityNotifier,
-                  builder: (context, child) {
-                    double opacity = _opacityNotifier.value;
-                    return Stack(
+                animation: _opacityNotifier,
+                builder: (context, child) {
+                  double opacity = _opacityNotifier.value;
+                  return Stack(
                     children: [
                       Container(
                         color: Colors.white.withOpacity(1 - opacity),
@@ -214,10 +146,10 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
                         width: MediaQuery.sizeOf(context).width,
                       ),
                       Container(
-                        color: Color(0xFFFAEFEB).withOpacity(opacity),
+                        color: const Color(0xFFFAEFEB).withOpacity(opacity),
                         child: TabBar(
                           controller: _tabController,
-                          labelColor: accentColor,
+                          labelColor: const Color(0xDBF32607),
                           indicatorWeight: 3,
                           tabs: const [
                             Tab(
@@ -245,7 +177,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
                       ),
                     ],
                   );
-                }
+                },
               ),
             ),
           ),
@@ -260,7 +192,6 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
       ),
     );
   }
-
 
   Widget _buildCategories() {
     return GridView.builder(
@@ -288,19 +219,19 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
-          onTap: () async {
-            if (index == 0) {
-              List<Map<String, dynamic>> recipes = await fetch.getAllRecipes();
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => RecipeList(recipes: recipes, userData: userData, swap: false, index: null, meal: {}, day: null, name: [],
-                    child: null,)));
-            } else {
-              List<Map<String, dynamic>> recipes = await fetch.getRecipesByType(index);
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => RecipeList(recipes: recipes, userData: userData, swap: false, index: null, meal: {}, day: null, name: [],
-                    child: null,)));
-            }
-          },
+        onTap: () async {
+          if (index == 0) {
+            List<Map<String, dynamic>> recipes = await fetch.getAllRecipes();
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => RecipeList(recipes: recipes, userData: userData, swap: false, index: null, meal: {}, day: null, name: [],
+                  child: null,)));
+          } else {
+            List<Map<String, dynamic>> recipes = await fetch.getRecipesByType(index);
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => RecipeList(recipes: recipes, userData: userData, swap: false, index: null, meal: {}, day: null, name: [],
+                  child: null,)));
+          }
+        },
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -337,23 +268,14 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
       ),
     );
   }
+
   Widget _buildRecipeList(bool isRecentlyViewed) {
-    final user = Provider.of<UserID>(context);
-    final userData = Provider.of<UserDataModel?>(context);
+    final userData = context.watch<UserDataModel?>();
 
-    if (userData == null) {
-      return Center(child: Text('No user data available'));
-    }
-
-    // Build the recipe list based on the future
-    return FutureBuilder(
-      future: isRecentlyViewed ? _recipeFuture : _recipeFuture2,
-      builder: (context, futureSnapshot) {
-        if (futureSnapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isNotEmpty) {
-          return isRecentlyViewed ? _buildMeal(_cachedRecipes) : _buildMeal(_cachedRecipes2);
-        }
-
-        if (futureSnapshot.connectionState == ConnectionState.waiting && _cachedRecipes.isEmpty) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: getRecipeDetails(userData, isRecentlyViewed),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.orange[700]!),
@@ -361,11 +283,11 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
           );
         }
 
-        if (futureSnapshot.hasError) {
+        if (snapshot.hasError) {
           return Center(child: Text('Error loading recipes'));
         }
 
-        final recipes = futureSnapshot.data;
+        final recipes = snapshot.data;
         if (recipes == null || recipes.isEmpty) {
           return Center(
             child: Text(
@@ -381,13 +303,12 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
     );
   }
 
-
-  Widget _buildMeal(snapshot){
+  Widget _buildMeal(List<Map<String, dynamic>> recipes) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      itemCount: snapshot.length,
+      itemCount: recipes.length,
       itemBuilder: (context, index) {
-        final recipe = snapshot[index];
+        final recipe = recipes[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: MealCard(
@@ -399,5 +320,4 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
       },
     );
   }
-
 }

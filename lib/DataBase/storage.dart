@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
+import 'package:meal/DataBase/fetch_db.dart';
 import 'dart:io';
 import '../Keys.dart';
 import '../Models/user_data.dart';
@@ -40,7 +41,6 @@ Future<Uint8List?> fetchImage(String recipeId, String imageUrl) async {
 
   // Check if the image is in the local database
   if (imageBox.containsKey(recipeId)) {
-    print('Image found in local database for recipe ID: $recipeId');
     return imageBox.get(recipeId);
   }
 
@@ -64,7 +64,37 @@ Future<Uint8List?> fetchImage(String recipeId, String imageUrl) async {
   return null;
 }
 
-Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(List<String> recipeIds) async {
+Future<void> fetchAndStoreRecipes(String uid) async {
+  final recipesBox = Hive.box('recipes');
+
+  try {
+    // Fetch recipes from Firebase
+    List<Map<String, dynamic>> recipes = await await Fetch(uid: uid).getAllRecipes();
+
+    for (var recipe in recipes) {
+      // Skip the Community document
+      if (recipe['id'] == 'community') continue;
+
+      // Convert Timestamp fields to DateTime strings
+      recipe.forEach((key, value) {
+        if (value is Timestamp) {
+          recipe[key] = value.toDate().toIso8601String();
+        }
+      });
+
+      // Save the cleaned recipe to Hive
+      String recipeId = recipe['id'];
+      recipesBox.put(recipeId, recipe);
+    }
+
+    print('Recipes successfully stored in Hive.');
+  } catch (e) {
+    print('Error fetching or storing recipes: $e');
+  }
+}
+
+
+Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(recipeIds) async {
   final recipesBox = Hive.box('recipes');
   List<Map<String, dynamic>> recipes = [];
 
@@ -76,7 +106,9 @@ Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(List<String> recipeId
 
   // Retrieve recipe details from Hive
   for (String id in recipeIds) {
+
     final recipeDetails = recipesBox.get(id); // Fetch recipe by ID from Hive
+    print(recipeDetails);
     if (recipeDetails != null) {
       recipes.add({
         'id': id,
@@ -93,6 +125,20 @@ Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(List<String> recipeId
   return recipes;
 }
 
+Future<void> updateFirebaseFromHive(String uid) async {
+  final userBox = Hive.box('userData');
+
+  if (userBox.containsKey('userInfo')) {
+    final cachedData = userBox.get('userInfo');
+    final hiveUserData = UserDataModel.fromMap(Map<String, dynamic>.from(cachedData), false);
+
+    // Update Firebase with Hive data
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(uid)
+        .update(hiveUserData.toMap());
+  }
+}
 
 
 

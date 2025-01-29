@@ -155,6 +155,16 @@ class _MealCardState extends State<MealCard> {
                           top: -10,
                           child: IconButton(
                             onPressed: () async {
+                              final updatedUserData = Hive.box('userData').get('userInfo');
+
+                              if (updatedUserData != null) {
+                                Provider.of<UserDataModel>(context, listen: false).updateUserData(
+                                  uid: user.uid,
+                                  recipeId: widget.meal['id'],
+                                  isSaved: true,
+                                  add: saved ? false : true,
+                                );
+                              }
                               setState(() {
                                 clicked = true;
                                 // Set the temporary state immediately to reflect the user's action.

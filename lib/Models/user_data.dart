@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -23,6 +24,9 @@ class UserDataModel with ChangeNotifier{
   @HiveField(5)
   final int swapped;
 
+  @HiveField(6)
+  final DateTime lastUpdated;
+
   UserDataModel({
     required this.name,
     required this.savedRecipes,
@@ -30,6 +34,7 @@ class UserDataModel with ChangeNotifier{
     required this.children,
     required this.custom,
     required this.swapped,
+    required this.lastUpdated
   });
 
   UserDataModel copyWith({
@@ -39,6 +44,7 @@ class UserDataModel with ChangeNotifier{
     List<dynamic>? children,
     bool? custom,
     int? swapped,
+    lastUpdated,
   }) {
     return UserDataModel(
       name: name ?? this.name,
@@ -47,10 +53,18 @@ class UserDataModel with ChangeNotifier{
       children: children ?? this.children,
       custom: custom ?? this.custom,
       swapped: swapped ?? this.swapped,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
   factory UserDataModel.fromMap(Map<String, dynamic> data, bool recent) {
+
+    final lastUpdated = data['lastUpdated'] != null
+        ? (data['lastUpdated'] is Timestamp
+        ? (data['lastUpdated'] as Timestamp).toDate() // Convert Timestamp to DateTime
+        : DateTime.parse(data['lastUpdated'])) // Fallback for String (if needed)
+        : DateTime.now();
+
     return UserDataModel(
       name: data['name'] ?? '',
       savedRecipes: List<String>.from(data['savedRecipes'] ?? []),
@@ -58,6 +72,7 @@ class UserDataModel with ChangeNotifier{
       children: List.from(data['children'] ?? ['adults']),
       custom: data['custom'] ?? false,
       swapped: data['swapped'] ?? 0,
+      lastUpdated: lastUpdated ?? DateTime.now(), // Default to current time if not available
     );
   }
 
@@ -69,6 +84,7 @@ class UserDataModel with ChangeNotifier{
       'children': children,
       'custom': custom,
       'swapped': swapped,
+      'lastUpdated': lastUpdated.toIso8601String()
     };
   }
 
@@ -119,9 +135,9 @@ class UserDataModel with ChangeNotifier{
       );
 
       userBox.put('userInfo', updatedUser.toMap());
-      print('*******************************');
+      print('**********/*///////*/*/*/************');
       print(updatedUser.recentRecipes);
-      print('*******************************');
+      print('**********/**/*/*/*/*/*/*/***********');
       notifyListeners(); // Notify listeners of changes
     }
   }

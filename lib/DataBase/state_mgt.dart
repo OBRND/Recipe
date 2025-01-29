@@ -14,18 +14,31 @@ Stream<UserDataModel?> userDataStream(String uid) async* {
   // Listen to Firebase updates and update Hive
   FirebaseFirestore.instance.collection('Users').doc(uid).snapshots().listen((snapshot) async {
     if (snapshot.exists) {
-      final userData = UserDataModel.fromMap(snapshot.data()!, true);
-      // Update Hive cache
-      await userBox.put('userInfo', userData.toMap());
+      final firebaseData = UserDataModel.fromMap(snapshot.data()!, true);
+
+      // Check if Hive data exists
+      if (userBox.containsKey('userInfo')) {
+        final hiveData = UserDataModel.fromMap(userBox.get('userInfo'), false);
+
+        // Compare timestamps to determine the most recent data
+        if (firebaseData.lastUpdated.isAfter(hiveData.lastUpdated)) {
+          // Firebase data is newer, update Hive
+          await userBox.put('userInfo', firebaseData.toMap());
+        } else if (firebaseData.lastUpdated.isBefore(hiveData.lastUpdated)) {
+          // Hive data is newer, update Firebase
+          await FirebaseFirestore.instance.collection('Users').doc(uid).update(hiveData.toMap());
+        }
+        // If timestamps are equal, no action is needed
+      } else {
+        // No Hive data, update Hive with Firebase data
+        await userBox.put('userInfo', firebaseData.toMap());
+      }
     }
   });
 
-  // Listen to Hive for changes and emit updates
+  // Yield Hive updates
   yield* userBox.watch(key: 'userInfo').map((event) {
     final updatedData = userBox.get('userInfo');
-    print('********************');
-    print(updatedData['recentRecipes'].toString());
-    print('--------------------');
     if (updatedData != null) {
       return UserDataModel.fromMap(Map<String, dynamic>.from(updatedData), false);
     }
