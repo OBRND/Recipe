@@ -3,9 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:meal/Screens/recipes/recipe_list.dart';
 import 'package:provider/provider.dart';
 import '../../DataBase/fetch_db.dart';
-import '../../DataBase/state_mgt.dart';
 import '../../DataBase/storage.dart';
-import '../../Models/connection.dart';
 import '../../Models/meal_card.dart';
 import '../../Models/user_data.dart';
 import '../../Models/user_id.dart';
@@ -72,7 +70,6 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserID>(context);
     final userData = context.watch<UserDataModel?>();
 
     if (userData == null) {
@@ -190,6 +187,22 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
           ],
         ),
       ),
+      floatingActionButton:  FloatingActionButton(onPressed: (){
+
+        void checkHiveDatabase() async {
+        final userBox = Hive.box('userData');
+        final cachedData = userBox.get('userInfo');
+
+          if (cachedData != null) {
+            print("Stored Recipes in Hive:");
+              print(cachedData.toString());
+          } else {
+            print("No recipes found in Hive.");
+          }
+        }
+        checkHiveDatabase();
+      }),
+
     );
   }
 

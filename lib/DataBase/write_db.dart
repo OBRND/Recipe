@@ -31,7 +31,7 @@ class Write{
       "name" : firstname,
       "children" : childInfo,
       'email' : email,
-      'recent' : null,
+      'recentRecipes' : null,
       'savedRecipes' : null
     });
   }
@@ -90,7 +90,7 @@ class Write{
       final snapshot = await transaction.get(docRef);
 
       if (snapshot.exists) {
-        List<dynamic> recentRecipes = snapshot['recent'] ?? [];
+        List<dynamic> recentRecipes = snapshot['recentRecipes'] ?? [];
 
          recentRecipes.remove(recipeId);
 
@@ -101,7 +101,7 @@ class Write{
         }
 
         transaction.update(docRef, {
-          'recent': recentRecipes,
+          'recentRecipes': recentRecipes,
         });
       }
     });

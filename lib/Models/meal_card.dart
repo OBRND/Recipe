@@ -10,6 +10,7 @@ import '../DataBase/storage.dart';
 import '../DataBase/write_db.dart';
 import '../Screens/recipes/recipe_details.dart';
 import 'color_model.dart';
+import 'connection.dart';
 import 'decoration.dart';
 
 class MealCard extends StatefulWidget {
@@ -27,7 +28,7 @@ class _MealCardState extends State<MealCard> {
   bool clicked = false;
   bool? temporarySavedState;
   Uint8List? _imageData;
-
+  final updatedUserData = Hive.box('userData').get('userInfo');
 
   void _loadImage() async {
     Uint8List? imageData = await fetchImage(widget.meal['id'], resizeImageUrl(widget.meal['imageUrl']));
@@ -62,9 +63,6 @@ class _MealCardState extends State<MealCard> {
     return InkWell(
       onTap: () {
         final updatedUserData = Hive.box('userData').get('userInfo');
-        print('*******************************');
-        print(updatedUserData.toString());
-        print('*******************************');
 
         if (updatedUserData != null) {
           Provider.of<UserDataModel>(context, listen: false).updateUserData(
@@ -82,6 +80,7 @@ class _MealCardState extends State<MealCard> {
                       foodName: widget.meal['name'],
                       ingredients: widget.meal['ingredients'],
                       selected: userInfo?.savedRecipes.contains(widget.meal['id']) ?? false,
+                      userInfo: userInfo
                     ),
 
           ),
@@ -155,35 +154,29 @@ class _MealCardState extends State<MealCard> {
                           top: -10,
                           child: IconButton(
                             onPressed: () async {
-                              final updatedUserData = Hive.box('userData').get('userInfo');
-
                               if (updatedUserData != null) {
-                                Provider.of<UserDataModel>(context, listen: false).updateUserData(
+                                Provider.of<UserDataModel>(
+                                    context, listen: false).updateUserData(
                                   uid: user.uid,
                                   recipeId: widget.meal['id'],
                                   isSaved: true,
                                   add: saved ? false : true,
                                 );
                               }
+                              // if (online) {
+                              //   if (saved) {
+                              //     await Write(uid: user.uid)
+                              //         .removeSavedRecipe(widget.meal['id']);
+                              //   } else {
+                              //     await Write(uid: user.uid)
+                              //         .saveRecipe(widget.meal['id']);
+                              //   }
+                              // }
                               setState(() {
                                 clicked = true;
                                 // Set the temporary state immediately to reflect the user's action.
                                 temporarySavedState = !saved;
                               });
-
-                              try {
-                                if (saved) {
-                                  await Write(uid: user.uid).removeSavedRecipe(widget.meal['id']);
-                                } else {
-                                  await Write(uid: user.uid).saveRecipe(widget.meal['id']);
-                                }
-                              } finally {
-                                setState(() {
-                                  clicked = false;
-                                  // Clear the temporary state to rely on the Provider after the operation.
-                                  temporarySavedState = null;
-                                });
-                              }
                             },
                             icon: clicked ? SizedBox(
                               height: 18,

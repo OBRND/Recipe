@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:meal/Screens/recipes/recipes.dart';
 import 'package:meal/Theme/app_theme.dart';
+import 'package:provider/provider.dart';
 
+import '../Models/connection.dart';
+import '../Models/user_id.dart';
 import 'connectivity_scaffold.dart';
 import 'home.dart';
 import 'ideas/ideas.dart';
@@ -81,6 +84,13 @@ class _bottomNavState extends State<bottomNav> with SingleTickerProviderStateMix
   }
   @override
   Widget build(BuildContext context) {
+
+    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context, listen: false);
+    final uid = Provider.of<UserID>(context).uid; // Replace with your UID provider
+
+    // Set the UID in the ConnectivityNotifier
+    connectivityNotifier.setUid(uid);
+
     return ConnectivityAwareScaffold(
       child: Scaffold(
         body: Stack(

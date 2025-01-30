@@ -1,9 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:meal/DataBase/write_db.dart';
 import 'package:provider/provider.dart';
 import '../../DataBase/storage.dart';
+import '../../Models/user_data.dart';
 import '../../Models/user_id.dart';
 
 class RecipeDetailsPage extends StatefulWidget {
@@ -12,6 +14,7 @@ class RecipeDetailsPage extends StatefulWidget {
   final String foodName;
   final bool selected;
   final List ingredients;
+  final UserDataModel? userInfo;
 
   const RecipeDetailsPage({
     Key? key,
@@ -20,6 +23,7 @@ class RecipeDetailsPage extends StatefulWidget {
     required this.recipeID,
     required this.foodName,
     required this.ingredients,
+    UserDataModel? this.userInfo,
   }) : super(key: key);
 
   @override
@@ -32,7 +36,8 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
   bool pressed = false;
   bool updatedRecent = false;
   Uint8List? _imageData;
-
+  bool isFirst = true;
+  final updatedUserData = Hive.box('userData').get('userInfo');
 
   void _loadImage() async {
     final imageData = await fetchImage(widget.recipeID, widget.imageURL);
@@ -95,11 +100,20 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
           onPressed: () async {
             await _controller.forward();
             await _controller.reverse();
-            widget.selected ?
-            await Write(uid: user.uid).removeSavedRecipe(widget.recipeID) :
-            await Write(uid: user.uid).saveRecipe(widget.recipeID);
+            if (updatedUserData != null) {
+              widget.userInfo!.updateUserData(
+                uid: user.uid,
+                recipeId: widget.recipeID,
+                isSaved: true,
+                add: widget.selected || pressed ? false : true,
+              );
+            }
+            // widget.selected ?
+            // await Write(uid: user.uid).removeSavedRecipe(widget.recipeID) :
+            // await Write(uid: user.uid).saveRecipe(widget.recipeID);
             setState(() {
-              pressed = !pressed;
+              pressed = isFirst && widget.selected ? false : !pressed;
+              isFirst = false;
             });
           },
           icon: Container(
@@ -109,8 +123,8 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
               borderRadius: BorderRadius.circular(100),
             ),
             child: Icon(
-              !pressed && widget.selected ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-              color: !pressed && widget.selected ? Colors.red : Colors.grey,
+              isFirst && widget.selected || pressed ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+              color: isFirst && widget.selected || pressed ? Colors.red : Colors.grey,
             ),
           ),
         ),

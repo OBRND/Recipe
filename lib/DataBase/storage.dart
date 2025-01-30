@@ -125,20 +125,6 @@ Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(recipeIds) async {
   return recipes;
 }
 
-Future<void> updateFirebaseFromHive(String uid) async {
-  final userBox = Hive.box('userData');
-
-  if (userBox.containsKey('userInfo')) {
-    final cachedData = userBox.get('userInfo');
-    final hiveUserData = UserDataModel.fromMap(Map<String, dynamic>.from(cachedData), false);
-
-    // Update Firebase with Hive data
-    await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(uid)
-        .update(hiveUserData.toMap());
-  }
-}
 
 
 

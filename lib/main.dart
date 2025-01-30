@@ -7,11 +7,13 @@ import 'package:meal/Screens/Wrapper.dart';
 import 'package:meal/Theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'Models/connection.dart';
+import 'Models/user_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await Hive.initFlutter();
+  Hive.registerAdapter(UserDataModelAdapter());
   await Hive.openBox('recipes');
   await Hive.openBox('images');
   await Hive.openBox('userData');

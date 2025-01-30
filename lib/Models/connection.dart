@@ -4,8 +4,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:meal/Models/user_data.dart';
 
-class ConnectivityNotifier with ChangeNotifier {
+class ConnectivityNotifier with ChangeNotifier  {
   bool _isConnected = true;
+  String? _uid;
 
   bool get isConnected => _isConnected;
 
@@ -17,19 +18,26 @@ class ConnectivityNotifier with ChangeNotifier {
         notifyListeners();
 
         // Trigger synchronization when the device comes online
-        if (_isConnected) {
-          _synchronizeData();
+        if (_isConnected && _uid != null) {
+          _synchronizeData(_uid!);
         }
       }
     });
   }
 
-  Future<void> _synchronizeData() async {
+  // Set the UID when it becomes available
+  void setUid(String uid) {
+    _uid = uid;
+  }
+
+  Future<void> _synchronizeData(String uid) async {
     final userBox = Hive.box('userData');
-    final uid = 'user_uid'; // Replace with the actual user ID
 
     if (userBox.containsKey('userInfo')) {
-      final hiveData = UserDataModel.fromMap(userBox.get('userInfo'), false);
+      final cachedData = userBox.get('userInfo');
+      // Convert Map<dynamic, dynamic> to Map<String, dynamic>
+      final convertedData = _convertMap(cachedData);
+      final hiveData = UserDataModel.fromMap(convertedData, false);
 
       // Fetch Firebase data
       final snapshot = await FirebaseFirestore.instance.collection('Users').doc(uid).get();
@@ -48,6 +56,9 @@ class ConnectivityNotifier with ChangeNotifier {
       }
     }
   }
-}
 
+  Map<String, dynamic> _convertMap(Map<dynamic, dynamic> map) {
+    return map.map((key, value) => MapEntry(key.toString(), value));
+  }
+}
 

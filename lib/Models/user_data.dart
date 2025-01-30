@@ -68,7 +68,7 @@ class UserDataModel with ChangeNotifier{
     return UserDataModel(
       name: data['name'] ?? '',
       savedRecipes: List<String>.from(data['savedRecipes'] ?? []),
-      recentRecipes: List<String>.from(recent ? data['recent'] : data['recentRecipes'] ?? []),
+      recentRecipes: List<String>.from(data['recentRecipes'] ?? []),
       children: List.from(data['children'] ?? ['adults']),
       custom: data['custom'] ?? false,
       swapped: data['swapped'] ?? 0,
@@ -132,6 +132,7 @@ class UserDataModel with ChangeNotifier{
       final updatedUser = userData.copyWith(
         savedRecipes: updatedSavedRecipes,
         recentRecipes: updatedRecentRecipes,
+        lastUpdated: DateTime.now()
       );
 
       userBox.put('userInfo', updatedUser.toMap());
