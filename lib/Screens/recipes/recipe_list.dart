@@ -1,7 +1,12 @@
+import 'dart:typed_data';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../../DataBase/fetch_db.dart';
+import '../../DataBase/storage.dart';
 import '../../DataBase/write_db.dart';
+import '../../Models/connection.dart';
 import '../../Models/user_data.dart';
 import '../../Models/user_id.dart';
 import './recipe_details.dart';
@@ -63,6 +68,18 @@ class _RecipeListState extends State<RecipeList> {
     }
   }
 
+  _loadImage(mealId, [recipeUrl]) {
+    final imageBox = Hive.box('images');
+
+    if (imageBox.containsKey(mealId)) {
+      return imageBox.get(mealId);
+    }
+    else {
+      final imageBytes = fetchImage(mealId, recipeUrl) as Uint8List;
+    return imageBytes;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserID>(context);
@@ -97,7 +114,7 @@ class _RecipeListState extends State<RecipeList> {
       backgroundColor: Colors.grey[50],
       appBar: _buildAppBar(),
       body: isLoading
-          ? _buildLoadingIndicator()
+          ? _buildLoadingIndicator(User)
           : _buildRecipeList(filteredRecipes, write),
     );
   }
@@ -191,13 +208,16 @@ class _RecipeListState extends State<RecipeList> {
   }
 
   Widget _buildRecipeCard(Map<String, dynamic> recipe, Write write) {
+    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context);
+    bool connected = connectivityNotifier.isConnected;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 2), // Reduced margin
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 0, // Reduced elevation for subtlety
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => _handleRecipeTap(recipe, write),
+        onTap: () => _handleRecipeTap(recipe, write, user),
         child: Row(
           children: [
             // Smaller image size
@@ -205,12 +225,7 @@ class _RecipeListState extends State<RecipeList> {
               padding: const EdgeInsets.all(8.0),
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(12)),
-                child: Image.network(
-                  resizeImageUrl(recipe['imageUrl']),
-                  width: 50, // Reduced width
-                  height: 50, // Reduced height
-                  fit: BoxFit.cover,
-                ),
+                child:_image(recipe['id'], recipe['imageUrl'])
               ),
             ),
             Expanded(
@@ -285,9 +300,17 @@ class _RecipeListState extends State<RecipeList> {
     );
   }
 
-  void _handleRecipeTap(Map<String, dynamic> recipe, Write write) {
-    write.updateRecent(recipe['id']);
+  void _handleRecipeTap(Map<String, dynamic> recipe, Write write, user) {
+    // write.updateRecent(recipe['id']);
+    final updatedUserData = Hive.box('userData').get('userInfo');
 
+    if (updatedUserData != null) {
+      Provider.of<UserDataModel>(context, listen: false).updateUserData(
+        uid: user.uid,
+        recipeId: widget.meal['id'],
+        isRecent: true,
+      );
+    }
     if (widget.swap) {
       _showSwapDialog(recipe, write);
     } else {
@@ -435,7 +458,21 @@ class _RecipeListState extends State<RecipeList> {
     );
   }
 
-  String resizeImageUrl(String url, {int width = 400, int height = 400}) {
+  Widget _image(mealId, [recipeUrl]) {
+    Uint8List imageBytes = _loadImage(mealId, recipeUrl);
+    if (imageBytes != null) {
+      return Image.memory(
+        imageBytes,
+        fit: BoxFit.cover,
+        cacheWidth: 50, // Set the desired width
+        cacheHeight: 50, // Set the desired height
+      );
+    } else {
+      return Center(child: Text('No image'));
+    }
+  }
+
+  String resizeImageUrl(String url, {int width = 50, int height = 50}) {
     if (url.contains('/upload/')) {
       return url.replaceFirst(
         '/upload/',

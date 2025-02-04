@@ -60,7 +60,6 @@ Future<Uint8List?> fetchImage(String recipeId, String imageUrl) async {
   } catch (e) {
     print('Error fetching image for recipe ID: $recipeId - $e');
   }
-
   return null;
 }
 
