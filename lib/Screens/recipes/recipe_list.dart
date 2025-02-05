@@ -114,8 +114,8 @@ class _RecipeListState extends State<RecipeList> {
       backgroundColor: Colors.grey[50],
       appBar: _buildAppBar(),
       body: isLoading
-          ? _buildLoadingIndicator(User)
-          : _buildRecipeList(filteredRecipes, write),
+          ? _buildLoadingIndicator()
+          : _buildRecipeList(filteredRecipes, write, User),
     );
   }
 
@@ -179,7 +179,7 @@ class _RecipeListState extends State<RecipeList> {
     );
   }
 
-  Widget _buildRecipeList(List<Map<String, dynamic>> recipes, Write write) {
+  Widget _buildRecipeList(List<Map<String, dynamic>> recipes, Write write, user) {
     if (recipes.isEmpty) {
       return Center(
         child: Column(
@@ -203,11 +203,11 @@ class _RecipeListState extends State<RecipeList> {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: recipes.length,
-      itemBuilder: (context, index) => _buildRecipeCard(recipes[index], write),
+      itemBuilder: (context, index) => _buildRecipeCard(recipes[index], write, user),
     );
   }
 
-  Widget _buildRecipeCard(Map<String, dynamic> recipe, Write write) {
+  Widget _buildRecipeCard(Map<String, dynamic> recipe, Write write, user) {
     final connectivityNotifier = Provider.of<ConnectivityNotifier>(context);
     bool connected = connectivityNotifier.isConnected;
 

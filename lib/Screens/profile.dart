@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:meal/DataBase/write_db.dart';
 import 'package:provider/provider.dart';
@@ -48,14 +49,56 @@ class _ProfileState extends State<Profile> {
             padding: const EdgeInsets.all(15.0),
             child: Column(
                 children: [
-                  SwitchListTile(
-                  title: Text('Dark Theme',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                //   SwitchListTile(
+                //   title: Text('Dark Theme',
+                //     style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                //   ),
+                //   activeColor: Colors.black38,
+                //   value: _isDarkTheme,
+                //   onChanged: _toggleTheme,
+                // ),
+                  CupertinoListTile(
+                    title: Text(
+                      'Dark Theme',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    trailing: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          width: 50, // Match switch width
+                          height: 30, // Match switch height
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            color: _isDarkTheme ? Colors.black54 : Colors.grey.shade300,
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(left: 4.0),
+                                child: Icon(CupertinoIcons.sun_max_fill,
+                                    size: 15, color: Colors.amber),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(right: 4),
+                                child: Icon(CupertinoIcons.moon_fill,
+                                    size: 15, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Actual switch (thumb moves over the icons)
+                        CupertinoSwitch(
+                          value: _isDarkTheme,
+                          onChanged: (value) => _toggleTheme(value),
+                          activeColor: Colors.transparent, // Hide default track color
+                          trackColor: Colors.transparent,  // Hide default track color
+                        ),
+                      ],
+                    ),
                   ),
-                  activeColor: Colors.black38,
-                  value: _isDarkTheme,
-                  onChanged: _toggleTheme,
-                ),
+
                   SizedBox(height: 16.0),
                   Text(
                     'Children Info',
