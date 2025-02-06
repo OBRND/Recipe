@@ -1,16 +1,12 @@
 import 'dart:typed_data';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:meal/Models/user_id.dart';
 import 'package:provider/provider.dart';
 import '../DataBase/storage.dart';
-import '../DataBase/write_db.dart';
 import '../Screens/recipes/recipe_details.dart';
 import 'color_model.dart';
-import 'connection.dart';
 import 'decoration.dart';
 
 class MealCard extends StatefulWidget {

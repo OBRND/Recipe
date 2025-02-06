@@ -68,7 +68,7 @@ Future<void> fetchAndStoreRecipes(String uid) async {
 
   try {
     // Fetch recipes from Firebase
-    List<Map<String, dynamic>> recipes = await await Fetch(uid: uid).getAllRecipes();
+    List<Map<String, dynamic>> recipes = await Fetch(uid: uid).getAllRecipes();
 
     for (var recipe in recipes) {
       // Skip the Community document
@@ -93,7 +93,7 @@ Future<void> fetchAndStoreRecipes(String uid) async {
 }
 
 
-Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(recipeIds) async {
+Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(recipeIds, uid) async {
   final recipesBox = Hive.box('recipes');
   List<Map<String, dynamic>> recipes = [];
 
@@ -105,20 +105,30 @@ Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(recipeIds) async {
 
   // Retrieve recipe details from Hive
   for (String id in recipeIds) {
+    var recipeDetails = recipesBox.get(id); // Fetch recipe by ID from Hive
 
-    final recipeDetails = recipesBox.get(id); // Fetch recipe by ID from Hive
-    print(recipeDetails);
-    if (recipeDetails != null) {
-      recipes.add({
-        'id': id,
-        'name': recipeDetails['name'],
-        'cal': recipeDetails['cal'],
-        'ingredients': recipeDetails['ingredients'],
-        'cookingTime': recipeDetails['cookingTime'],
-        'imageUrl': recipeDetails['imageUrl'],
-        'favoritesCount': recipeDetails['favoritesCount'],
-      });
+    if (recipeDetails == null) {
+      // Fetch from Firebase if not found in Hive
+      var recipe = await Fetch(uid: uid).getSingleRecipe(id);
+
+      if (recipe['timestamp'] is Timestamp) {
+        recipe['timestamp'] = recipe['timestamp'].toDate().toIso8601String();
+      }
+
+      await recipesBox.put(id, recipe); // Save to Hive
+      recipeDetails = recipe; // Update variable with newly stored data
     }
+
+    // Now recipeDetails is always valid, add to the list
+    recipes.add({
+      'id': id,
+      'name': recipeDetails['name'],
+      'cal': recipeDetails['cal'],
+      'ingredients': recipeDetails['ingredients'],
+      'cookingTime': recipeDetails['cookingTime'],
+      'imageUrl': recipeDetails['imageUrl'],
+      'favoritesCount': recipeDetails['favoritesCount'],
+    });
   }
 
   return recipes;

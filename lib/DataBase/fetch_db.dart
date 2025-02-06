@@ -109,13 +109,25 @@ class Fetch{
     List<Map<String, dynamic>> allRecipes = await getAllRecipes();
 
     List<Map<String, dynamic>> filteredRecipes = allRecipes.where((recipe) {
-      return recipe['course'] ==
-          selectedMealType;
+      return recipe['course'] == selectedMealType;
     }).toList();
     print(filteredRecipes);
     print("-=-=-=OK=-=-=-");
 
     return filteredRecipes;
+  }
+
+  Future getSingleRecipe(recipeId) async{
+
+    try {
+      DocumentSnapshot recipe = await Recipe.doc(recipeId).get();
+        return { 'id': recipe.id,
+          ...recipe.data() as Map<String, dynamic>
+        };
+    } catch (e) {
+      print('Error fetching recipe: ${e.toString()}');
+      return {};
+    }
   }
 
   Future<Map<String, dynamic>> getRecipe(String recipeId) async{

@@ -41,7 +41,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
       });
   }
 
-  Future<List<Map<String, dynamic>>> getRecipeDetails(UserDataModel? userData, bool isRecentlyViewed) async {
+  Future<List<Map<String, dynamic>>> getRecipeDetails(UserDataModel? userData, bool isRecentlyViewed, String uid) async {
     if (userData == null) {
       return [];
     }
@@ -53,7 +53,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
     }
 
     // Fetch additional recipe details from Hive
-    final recipes = await getSavedRecipesFromHive(recipeIds);
+    final recipes = await getSavedRecipesFromHive(recipeIds, uid);
     return recipes;
   }
 
@@ -101,9 +101,9 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                              child: const Text(
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                              child: Text(
                                 'Recipe Collection',
                                 style: TextStyle(
                                   color: Colors.black87,
@@ -284,9 +284,10 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
 
   Widget _buildRecipeList(bool isRecentlyViewed) {
     final userData = context.watch<UserDataModel?>();
+    final user = Provider.of<UserID>(context);
 
     return FutureBuilder<List<Map<String, dynamic>>>(
-      future: getRecipeDetails(userData, isRecentlyViewed),
+      future: getRecipeDetails(userData, isRecentlyViewed, user.uid),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(

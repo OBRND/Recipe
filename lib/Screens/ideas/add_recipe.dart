@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meal/Models/decoration.dart';
 import 'package:provider/provider.dart';
@@ -124,15 +125,47 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   Future<void> _pickImage() async {
     final ImagePicker _picker = ImagePicker();
     try {
+      // Step 1: Pick an image from the gallery
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         // imageQuality: 80, // Compress the image to 80% quality
       );
 
       if (image != null) {
-        setState(() {
-          _selectedImage = File(image.path); // Convert XFile to File
-        });
+        // Step 2: Crop the selected image
+        final CroppedFile? croppedFile = await ImageCropper().cropImage(
+          sourcePath: image.path,
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1), // 1:1 aspect ratio
+          compressQuality: 100, // Maintain high quality
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Crop Image',
+              toolbarColor: Colors.deepOrange,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.square,
+              lockAspectRatio: true, // Lock the aspect ratio to 1:1
+            ),
+            IOSUiSettings(
+              title: 'Crop Image',
+              aspectRatioLockEnabled: true, // Lock the aspect ratio to 1:1
+            ),
+          ],
+        );
+
+        if (croppedFile != null) {
+          // Step 3: Convert CroppedFile to File
+          final File croppedImageFile = File(croppedFile.path);
+
+          // Step 4: Update the state with the cropped image
+          setState(() {
+            _selectedImage = croppedImageFile; // Use the cropped image
+          });
+        } else {
+          // User canceled the cropping process
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image cropping canceled.')),
+          );
+        }
       } else {
         // User canceled the picker
         ScaffoldMessenger.of(context).showSnackBar(
@@ -142,10 +175,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     } catch (e) {
       // Error handling
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick image: $e')),
+        SnackBar(content: Text('Failed to pick or crop image: $e')),
       );
     }
   }
+
 
   Widget _buildRequiredLabel(String label) {
     return RichText(
