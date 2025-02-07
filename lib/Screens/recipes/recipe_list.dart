@@ -217,7 +217,7 @@ class _RecipeListState extends State<RecipeList> {
       elevation: 0, // Reduced elevation for subtlety
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => _handleRecipeTap(recipe, write, user),
+        onTap: () => _handleRecipeTap(recipe, write),
         child: Row(
           children: [
             // Smaller image size
@@ -300,14 +300,16 @@ class _RecipeListState extends State<RecipeList> {
     );
   }
 
-  void _handleRecipeTap(Map<String, dynamic> recipe, Write write, user) {
+  void _handleRecipeTap(Map<String, dynamic> recipe, Write write) {
     // write.updateRecent(recipe['id']);
+
+    final user = Provider.of<UserID>(context, listen: false);
     final updatedUserData = Hive.box('userData').get('userInfo');
 
     if (updatedUserData != null) {
-      Provider.of<UserDataModel>(context, listen: false).updateUserData(
+      widget.userData?.updateUserData(
         uid: user.uid,
-        recipeId: widget.meal['id'],
+        recipeId: recipe['id'],
         isRecent: true,
       );
     }

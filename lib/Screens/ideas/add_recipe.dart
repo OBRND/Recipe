@@ -639,7 +639,10 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recipe uploaded successfully!')),
+        const SnackBar(
+          content: Text('Recipe uploaded successfully!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,),
       );
 
       setState(() {

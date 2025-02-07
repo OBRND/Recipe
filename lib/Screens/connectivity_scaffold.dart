@@ -29,7 +29,8 @@ class _ConnectivityAwareScaffoldState extends State<ConnectivityAwareScaffold> {
         SnackBar(
           content: Text(message),
           backgroundColor: color,
-          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 1),
         ),
       );
     });
