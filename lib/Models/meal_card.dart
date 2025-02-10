@@ -10,11 +10,12 @@ import 'color_model.dart';
 import 'decoration.dart';
 
 class MealCard extends StatefulWidget {
+  final Key? key;
   bool home;
   var meal;
   int index;
 
-  MealCard({required this.meal, required this.home,required this.index});
+  MealCard({required this.meal, required this.home,required this.index, this.key}): super(key: key);
 
   @override
   State<MealCard> createState() => _MealCardState();
@@ -99,6 +100,7 @@ class _MealCardState extends State<MealCard> {
                           padding: EdgeInsets.only(left: MediaQuery.sizeOf(context).width / 2.8 + 10,
                               right: 10, top: 10, bottom: 10),
                           child: Column(
+                            key: ValueKey('name_${widget.meal['id']}'),
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -149,6 +151,7 @@ class _MealCardState extends State<MealCard> {
                           right: 0,
                           top: -10,
                           child: IconButton(
+                            key: ValueKey('save_${widget.meal['id']}'),
                             onPressed: () async {
                               if (updatedUserData != null) {
                                 Provider.of<UserDataModel>(
@@ -174,7 +177,7 @@ class _MealCardState extends State<MealCard> {
                                 temporarySavedState = !saved;
                               });
                             },
-                            icon: clicked ? SizedBox(
+                            icon: clicked ? const SizedBox(
                               height: 18,
                               width: 18,
                               child: CircularProgressIndicator(

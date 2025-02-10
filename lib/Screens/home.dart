@@ -334,7 +334,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2.0),
-                  child: MealCard(meal: meal, home: true, index: index),
+                  child: MealCard(key: ValueKey(meal['id']),meal: meal, home: true, index: index),
                 ),
               ),
             );
