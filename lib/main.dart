@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:meal/Auth/auth_service.dart';
 import 'package:meal/Models/user_id.dart';
@@ -17,6 +18,7 @@ void main() async {
   await Hive.openBox('recipes');
   await Hive.openBox('images');
   await Hive.openBox('userData');
+  // debugRepaintRainbowEnabled = true;
   runApp(
     ChangeNotifierProvider(
         create: (_) => ConnectivityNotifier(),

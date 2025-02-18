@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:meal/Screens/recipes/recipe_list.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +31,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
     {'name': 'Drinks', 'icon': Icons.local_drink, 'gradient': [Colors.purple[50]!, Colors.purple[100]!]},
   ];
 
+
   @override
   void initState() {
     super.initState();
@@ -38,8 +42,32 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
         double maxScroll = _scrollController.position.maxScrollExtent;
         double newOpacity = (offset / maxScroll).clamp(0.0, 1.0);
         _opacityNotifier.value = newOpacity;
+
+        if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+          // If user scrolls up past a threshold, snap categories away with smooth scrolling
+          if (offset > 50) {
+            _smoothScrollTo(maxScroll); // Smoothly scroll to max scroll position
+          }
+        }
       });
   }
+
+  void _smoothScrollTo(double targetOffset) {
+    double currentOffset = _scrollController.offset;
+    const duration = Duration(milliseconds: 300); // Set the desired duration
+    const interval = Duration(milliseconds: 10); // Interval for each scroll step
+    double step = (targetOffset - currentOffset) / (duration.inMilliseconds / interval.inMilliseconds);
+
+    Timer.periodic(interval, (timer) {
+      if ((_scrollController.offset - targetOffset).abs() < 1) {
+        timer.cancel();
+        return;
+      }
+      double newOffset = _scrollController.offset + step;
+      _scrollController.jumpTo(newOffset);
+    });
+  }
+
 
   Future<List<Map<String, dynamic>>> getRecipeDetails(UserDataModel? userData, bool isRecentlyViewed, String uid) async {
     if (userData == null) {

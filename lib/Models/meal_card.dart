@@ -220,17 +220,17 @@ class _MealCardState extends State<MealCard> {
                     Container(
                       width: 50,
                       height: 25,
-                      child: Center(
-                        child: Text(
-                          '${userInfo?.children[widget.index - 1]['name']}',
-                          style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                      ),
                       decoration: BoxDecoration(
                         borderRadius: const BorderRadius.only(bottomRight: Radius.circular(15),
                           topLeft:  Radius.circular(12),
                         ),
                         color: ChildColorModel.colorOfChild(widget.index - 1).withOpacity(.8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${userInfo?.children[widget.index - 1]['name']}',
+                          style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ]

@@ -154,8 +154,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
               child: Icon(Icons.person_outline_rounded),
             ))),
         title: Text(
-            UserInfo == null ? "Your plan" :
-            "Hey " + UserInfo.name.substring(0,1).toUpperCase()+ UserInfo.name.substring(1) + ", here's your plan",
+            "Meals for the day",
             style: TextStyle(color: Color.fromARGB(255, 39, 32, 34), fontWeight: FontWeight.w300, fontSize: 18)),
         actions: [
           IconButton(onPressed: () {
@@ -359,6 +358,5 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
       }).toList(),
     );
   }
-
 
 }

@@ -419,9 +419,9 @@ class Write{
     required String mealType,
     Set<String>? selectedPreferences,
     String? calories,
-    String? videoUrl
+    String? videoUrl,
+    required String recipeId
   }) async {
-    String recipeId = generateCode();
     try {
       await Recipe.doc(recipeId).set({
         'name': name,

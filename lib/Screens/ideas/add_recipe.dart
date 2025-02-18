@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../DataBase/storage.dart';
 import '../../DataBase/write_db.dart';
 import '../../Models/user_id.dart';
+import 'package:intl/intl.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});
@@ -616,7 +618,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     }
 
     try {
-      final imageUrl = await uploadImage(_selectedImage!);
+      String recipeId = generateCode();
+      final imageUrl = await uploadImage(_selectedImage!, '${_nameController.text + recipeId}');
       if (imageUrl == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Image upload failed!')),
@@ -635,7 +638,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         cookingTime: _cookingTimeController.text,
         selectedPreferences:  _includePreferences == true ? _selectedPreferences: null,
         calories:  _includeCalories == true ? _caloriesController.text: null,
-        videoUrl: _videoLinkController.text.isNotEmpty ?  _videoLinkController.text : null
+        videoUrl: _videoLinkController.text.isNotEmpty ?  _videoLinkController.text : null,
+        recipeId: recipeId
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -660,4 +664,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     }
   }
 
+}
+
+String generateCode() {
+  String datePart = DateFormat('ddMM').format(DateTime.now());
+  String randomPart = Random().nextInt(1000).toString().padLeft(3, '0');
+
+  return 'C$datePart$randomPart';
 }

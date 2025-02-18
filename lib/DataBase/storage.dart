@@ -1,26 +1,42 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:meal/DataBase/fetch_db.dart';
 import 'dart:io';
 import '../Keys.dart';
-import '../Models/user_data.dart';
 
-Future<String?> uploadImage(File imageFile) async {
-  // Replace with your Cloudinary cloud name
-
+Future<String?> uploadImage(File imageFile, String id) async {
+  const int sizeLimitInBytes = 5 * 1024 * 1024; // 5 MB
   final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/upload');
 
   try {
-    final request = http.MultipartRequest('POST', url);
-    request.fields['upload_preset'] = 'preset_1';
-    request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+    // Read the image file into a Uint8List
+    Uint8List imageBytes = await imageFile.readAsBytes();
+
+    // Check if the image is already below the size limit
+    if (imageBytes.length <= sizeLimitInBytes) {
+      print('Image is already below the size limit. Uploading as is...');
+    } else {
+      print('Image exceeds the size limit. Compressing...');
+      // Compress the image to meet the size limit
+      imageBytes = await compressImageToSize(imageBytes, sizeLimitInBytes) ?? imageBytes;
+    }
+
+    // Create the multipart request
+    final request = http.MultipartRequest('POST', url)
+      ..fields['upload_preset'] = 'preset_1'
+      ..files.add(http.MultipartFile.fromBytes(
+        'file',
+        imageBytes,
+        filename: '$id.webp', // Use WebP for better compression
+      ));
 
     // Send the request
     final response = await request.send();
-    print(response.statusCode);
+    print('Upload status code: ${response.statusCode}');
 
     if (response.statusCode == 200) {
       final responseData = await http.Response.fromStream(response);
@@ -36,6 +52,26 @@ Future<String?> uploadImage(File imageFile) async {
   }
 }
 
+Future<Uint8List?> compressImageToSize(Uint8List imageBytes, int sizeLimitInBytes) async {
+  int quality = 100; // Start with maximum quality
+  Uint8List? compressedImage = imageBytes;
+
+  while (compressedImage!.length > sizeLimitInBytes && quality > 0) {
+    quality -= 5; // Reduce quality by 5% in each iteration
+    compressedImage = await FlutterImageCompress.compressWithList(
+      compressedImage,
+      quality: quality,
+      format: CompressFormat.webp, // Use WebP for better compression
+    );
+
+    if (compressedImage == null) {
+      break; // Stop if compression fails
+    }
+  }
+
+  return compressedImage;
+}
+
 Future<Uint8List?> fetchImage(String recipeId, String imageUrl) async {
   final imageBox = Hive.box('images');
 
@@ -48,7 +84,7 @@ Future<Uint8List?> fetchImage(String recipeId, String imageUrl) async {
   try {
     final response = await http.get(Uri.parse(imageUrl));
     if (response.statusCode == 200) {
-      final imageBytes = response.bodyBytes;
+      final imageBytes = await convertToWebP(response.bodyBytes);
 
       // Save the image in the Hive database
       imageBox.put(recipeId, imageBytes);
@@ -134,6 +170,16 @@ Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(recipeIds, uid) async
   return recipes;
 }
 
+Future<Uint8List> convertToWebP(Uint8List imageBytes) async {
+
+  final result = await FlutterImageCompress.compressWithList(
+    imageBytes,
+    format: CompressFormat.webp, // Specify WebP format
+    quality: 75, // Set the desired quality (0-100)
+  );
+
+  return result;
+}
 
 
 
