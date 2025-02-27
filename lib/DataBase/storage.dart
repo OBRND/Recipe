@@ -128,6 +128,44 @@ Future<void> fetchAndStoreRecipes(String uid) async {
   }
 }
 
+Future<void> createCustomMealPlanWithSwap(
+    List<Map<String, dynamic>> weeklyPlan,
+    String newMealId,
+    int mealIndex,
+    int dayIndex,
+    int child,
+    List children,
+    UserDataModel
+    ) async {
+  final userBox = Hive.box('userData');
+  final recipesBox = Hive.box('recipes');
+
+
+  print('****************************Commencing**************************');
+
+  // Swap the selected meal with the new meal ID on the specified day and meal type
+  final mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+  final mealType = mealTypes[mealIndex];
+
+  // Ensure the weekly plan is within bounds and replace the specific meal
+  if (weeklyPlan[child][dayIndex.toString()][mealIndex]['mealType'] == mealType) {
+    weeklyPlan[child][dayIndex.toString()][mealIndex]['id'] = newMealId;
+  }
+
+  // Save the updated weekly plan to Hive
+  await recipesBox.put('weeklyPlan', weeklyPlan);
+
+  // Update the swapped count in Hive
+  final userInfo = userBox.get('userInfo');
+  if (userInfo != null) {
+    final updatedUserInfo = UserDataModel.fromMap(userInfo, false);
+    updatedUserInfo.swapped += 1;
+    updatedUserInfo.custom = true;
+    await userBox.put('userInfo', updatedUserInfo.toMap());
+  }
+
+  print('****************************Custom meal plan created with swap in Hive.**************************');
+}
 
 Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(recipeIds, uid) async {
   final recipesBox = Hive.box('recipes');

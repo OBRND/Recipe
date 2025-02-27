@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:meal/DataBase/state_mgt.dart';
 import 'package:provider/provider.dart';
 import '../../DataBase/fetch_db.dart';
 import '../../DataBase/storage.dart';
@@ -20,6 +21,7 @@ class RecipeList extends StatefulWidget {
   final int? child;
   final Map meal;
   final List? name;
+  final UserDataModel? userInfo;
 
   RecipeList({
     super.key,
@@ -31,6 +33,7 @@ class RecipeList extends StatefulWidget {
     required this.day,
     required this.child,
     required this.name,
+    this.userInfo,
   });
 
   @override
@@ -314,7 +317,7 @@ class _RecipeListState extends State<RecipeList> {
       );
     }
     if (widget.swap) {
-      _showSwapDialog(recipe, write);
+      _showSwapDialog(recipe, write, user.uid);
     } else {
       Navigator.push(
         context,
@@ -331,7 +334,8 @@ class _RecipeListState extends State<RecipeList> {
     }
   }
 
-  void _showSwapDialog(Map<String, dynamic> recipe, Write write) {
+  void _showSwapDialog(Map<String, dynamic> recipe, Write write, String uid) {
+
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -344,16 +348,14 @@ class _RecipeListState extends State<RecipeList> {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
-                  child: Flexible(
-                    child: Container(
-                      height: MediaQuery.sizeOf(context).height * .7,
-                      child: RecipeDetailsPage(
-                        recipeID: recipe['id'],
-                        imageURL: recipe['imageUrl'],
-                        foodName: recipe['name'],
-                        ingredients: recipe['ingredients'],
-                        selected: widget.userData?.savedRecipes.contains(recipe['id']) ?? false,
-                      ),
+                  child: Container(
+                    height: MediaQuery.sizeOf(context).height * .7,
+                    child: RecipeDetailsPage(
+                      recipeID: recipe['id'],
+                      imageURL: recipe['imageUrl'],
+                      foodName: recipe['name'],
+                      ingredients: recipe['ingredients'],
+                      selected: widget.userData?.savedRecipes.contains(recipe['id']) ?? false,
                     ),
                   ),
                 ),
@@ -418,17 +420,22 @@ class _RecipeListState extends State<RecipeList> {
                     onPressed: () {
                       print(recipesIndex);
                       Navigator.pop(context);
-                      write.createCustomMealPlanWithSwap(
+                      createCustomMealPlanWithSwap(
                         weeklyPlan,
                         recipe['id'],
                         recipesIndex,
                         widget.day!,
                         widget.child!,
                         widget.userData!.children,
+                          widget.userData!
+                      );
+                      widget.userInfo!.updateUserData(
+                        uid: uid,
+                        recipeId: widget.meal['id'],
+                        isRecent: true,
                       );
                       write.updateIngredients(recipe['ingredients'], widget.meal['ingredients']);
                       Navigator.pop(context);
-
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange[700],

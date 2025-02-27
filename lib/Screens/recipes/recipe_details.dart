@@ -136,39 +136,42 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Image with overlay
-          Container(
-            height: 250,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              image: _imageData != null
-                  ? DecorationImage(
-                fit: BoxFit.cover,
-                image: MemoryImage(_imageData!),
-              ) : DecorationImage(
-                  fit: BoxFit.cover,
-                image: NetworkImage(widget.imageURL)),
-              ),
+          Hero(
+            tag: widget.recipeID,
             child: Container(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: EdgeInsets.fromLTRB(6, 6, 20, 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black26.withOpacity(.7),
-                      borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
-                    ),
-                    child: Text(
-                      widget.foodName,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+              height: 250,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                image: _imageData != null
+                    ? DecorationImage(
+                  fit: BoxFit.cover,
+                  image: MemoryImage(_imageData!),
+                ) : DecorationImage(
+                    fit: BoxFit.cover,
+                  image: NetworkImage(widget.imageURL)),
+                ),
+              child: Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.fromLTRB(6, 6, 20, 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black26.withOpacity(.7),
+                        borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
+                      ),
+                      child: Text(
+                        widget.foodName,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

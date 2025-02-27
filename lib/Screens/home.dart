@@ -33,58 +33,32 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   bool first = true;
   int swapped = 0;
 
-  void _loadRecipes(uid, ageGroups, custom, swap) {
-    print('reloaddddddddddddddddddddddddded');
-    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context, listen: false);
+  void _loadRecipes(String uid, List<String> ageGroups, bool custom, int swap) {
+    print('Reloading recipes...');
     final recipesBox = Hive.box('recipes');
-    final isOnline = connectivityNotifier.isConnected;
 
-    if (isOnline) {
-      // Online: Fetch from Firebase
-      _recipeFuture = Fetch(uid: uid).getWeeklyPlan(ageGroups, custom).then((newRecipes) {
-        setState(() {
-          _cachedRecipes = newRecipes;
-          _isLoading = true;
-          swapped = swap;
-          first = false;
-
-          // Save recipes to Hive
-          recipesBox.put('weeklyPlan', newRecipes);
-        });
-        return newRecipes;
-      }).catchError((_) {
-        setState(() {
-          _isLoading = true;
-        });
-        print('+++++++++++++++++++++++++++++++');
-        print(_cachedRecipes.toString());
-        print('+++++++++++++++++++++++++++++++');
-        return _cachedRecipes;
-      });
-    } else {
-      // Offline: Load from Hive
+    // Always load from Hive
+    _recipeFuture = Future(() async {
       final cachedData = recipesBox.get('weeklyPlan');
-      _recipeFuture = Future(() async{
-        if (cachedData != null) {
-          return (cachedData as List)
-              .map((item) => Map<String, dynamic>.from(item as Map))
-              .toList();
-        } else {
-          return <Map<String, dynamic>>[]; // Return an empty list if no cached data
-        }
-      }).then((cachedRecipes) {
-        setState(() {
-          _cachedRecipes = cachedRecipes;
-          _isLoading = true;
-          if(first){
-            first = false;
-          }
-        });
-        return cachedRecipes;
-      });
-    }
 
-    // checkHiveDatabase();
+      if (cachedData != null) {
+        return (cachedData as List)
+            .map((item) => Map<String, dynamic>.from(item as Map))
+            .toList();
+      } else {
+        return <Map<String, dynamic>>[]; // Return an empty list if no cached data
+      }
+    }).then((cachedRecipes) {
+      setState(() {
+        _cachedRecipes = cachedRecipes;
+        _isLoading = true;
+        swapped = swap;
+        if (first) {
+          first = false;
+        }
+      });
+      return cachedRecipes;
+    });
   }
 
 
@@ -106,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    // checkHiveDatabase(); // Check and display stored recipes in the terminal
+    checkHiveDatabase(); // Check and display stored recipes in the terminal
   }
 
 
@@ -115,18 +89,17 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
     final UserInfo = Provider.of<UserDataModel?>(context);
     final user = Provider.of<UserID>(context);
     super.build(context);
-    final connectivityNotifier = Provider.of<ConnectivityNotifier>(context);
     List<String> ageGroups = [];
     if (UserInfo == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    for(int i = 0 ; i < UserInfo!.children.length; i++) {
-      UserInfo!.custom ? ageGroups.add(UserInfo.children[i]['name']) :
+    for(int i = 0 ; i < UserInfo.children.length; i++) {
+      UserInfo.custom ? ageGroups.add(UserInfo.children[i]['name']) :
       ageGroups.add(UserInfo.children[i]['ageGroups']);
     }
-    if(first && !connectivityNotifier.isConnected){
-      _loadRecipes(user.uid, ageGroups, UserInfo?.custom, UserInfo?.swapped);
-    };
+    if(first){
+      _loadRecipes(user.uid, ageGroups, UserInfo.custom, UserInfo.swapped);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -137,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                   Consumer<UserDataModel?>(
                     builder: (BuildContext context, UserDataModel? value,
                         Widget? child) {
-                      return Profile(info: UserInfo!.children,);
+                      return Profile(info: UserInfo.children,);
                     },
                   )),);
           },
@@ -244,7 +217,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
       ageGroups.add(userInfo.children[i]['ageGroups']);
     }
 
-    if((!_isLoading || swapped < userInfo.swapped) && isOnline) {
+    if((!_isLoading || swapped < userInfo.swapped)) {
       _loadRecipes(user.uid, ageGroups, userInfo.custom, userInfo.swapped);
     }
       return SingleChildScrollView(
@@ -292,6 +265,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
       ) {
     List<String> mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
     int index = 0;
+    final userInfo = Provider.of<UserDataModel?>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,6 +295,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                         day: selected,
                         child: weeklyPlan.indexOf(dayData),
                         name: ageGroups,
+                        userInfo: userInfo,
                       ),
                     ),
                   );

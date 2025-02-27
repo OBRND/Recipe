@@ -82,6 +82,8 @@ class _MealCardState extends State<MealCard> {
 
           ),
         );
+
+
       },
       child: Container(
         height: MediaQuery.sizeOf(context).width / 2.8,
@@ -154,8 +156,7 @@ class _MealCardState extends State<MealCard> {
                             key: ValueKey('save_${widget.meal['id']}'),
                             onPressed: () async {
                               if (updatedUserData != null) {
-                                Provider.of<UserDataModel>(
-                                    context, listen: false).updateUserData(
+                                Provider.of<UserDataModel>(context, listen: false).updateUserData(
                                   uid: user.uid,
                                   recipeId: widget.meal['id'],
                                   isSaved: true,
@@ -234,21 +235,25 @@ class _MealCardState extends State<MealCard> {
                       ),
                     ),
                   ]
-              ) : Card(
+              )
+                 : Card(
                elevation: 5,
                margin: EdgeInsets.all(0),
-               child: Container(
-                 width: MediaQuery.sizeOf(context).width / 2.8,
-                 decoration: BoxDecoration(
-                   borderRadius: BorderRadius.all(Radius.circular(12)),
-                   image: _imageData != null
-                       ? DecorationImage(
-                     fit: BoxFit.fill,
-                     image: MemoryImage(_imageData!),
-                   )
-                       : DecorationImage(
-                     fit: BoxFit.fill,
-                     image: NetworkImage(resizeImageUrl(widget.meal['imageUrl'])),
+               child: Hero(
+                 tag: widget.meal['id'],
+                 child: Container(
+                   width: MediaQuery.sizeOf(context).width / 2.8,
+                   decoration: BoxDecoration(
+                     borderRadius: BorderRadius.all(Radius.circular(12)),
+                     image: _imageData != null
+                         ? DecorationImage(
+                       fit: BoxFit.fill,
+                       image: MemoryImage(_imageData!),
+                     )
+                         : DecorationImage(
+                       fit: BoxFit.fill,
+                       image: NetworkImage(resizeImageUrl(widget.meal['imageUrl'])),
+                     ),
                    ),
                  ),
                ),
