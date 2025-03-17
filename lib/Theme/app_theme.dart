@@ -19,7 +19,7 @@ class AppThemes {
     brightness: Brightness.light,
     primaryColor: dominantColor,
     scaffoldBackgroundColor: scaffoldColor,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       color: dominantColor,
       surfaceTintColor: accentColor,
         titleTextStyle: TextStyle(color: thunderColor, fontWeight: FontWeight.bold, fontSize: 18)
@@ -48,11 +48,11 @@ class AppThemes {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       ),
     ),
-    iconTheme: IconThemeData(color: thunderColor),
-    tabBarTheme: TabBarTheme(
+    iconTheme: const IconThemeData(color: thunderColor),
+    tabBarTheme: const TabBarTheme(
       indicatorColor: accentColor
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       headlineLarge: TextStyle(
         color: thunderColor,
         fontSize: 24.0,
@@ -78,54 +78,46 @@ class AppThemes {
     ),
     chipTheme: ChipThemeData(
       backgroundColor: secondaryColor,
-      labelStyle: TextStyle(color: oldRedColor),
+      labelStyle: const TextStyle(color: oldRedColor),
       selectedColor: Colors.orange[200],
       checkmarkColor: accentColor,
-      side: BorderSide(color: greyCustom),
+      side: const BorderSide(color: greyCustom),
     ),
-    switchTheme: SwitchThemeData(
+    switchTheme: const SwitchThemeData(
       thumbColor: WidgetStatePropertyAll(accentColor),
     ),
   );
 
   // Dark theme (if required, toggleable via settings)
-  // static final ThemeData darkTheme = ThemeData(
-  //   brightness: Brightness.dark,
-  //   primaryColor: thunderColor,
-  //   scaffoldBackgroundColor: thunderColor,
-  //   accentColor: siennaColor,
-  //   cardTheme: CardTheme(
-  //     color: flameGray,
-  //     shadowColor: oldRedColor,
-  //     shape: RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.circular(12.0),
-  //     ),
-  //   ),
-  //   elevatedButtonTheme: ElevatedButtonThemeData(
-  //     style: ElevatedButton.styleFrom(
-  //       backgroundColor: siennaColor,
-  //       foregroundColor: Colors.white,
-  //       shape: RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.circular(8.0),
-  //       ),
-  //       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-  //     ),
-  //   ),
-  //   textTheme: TextTheme(
-  //     headline1: TextStyle(
-  //       color: dominantColor,
-  //       fontSize: 24.0,
-  //       fontWeight: FontWeight.bold,
-  //     ),
-  //     bodyText1: TextStyle(
-  //       color: secondaryColor,
-  //       fontSize: 16.0,
-  //     ),
-  //     button: TextStyle(
-  //       color: Colors.white,
-  //       fontSize: 14.0,
-  //       fontWeight: FontWeight.w600,
-  //     ),
-  //   ),
-  // );
+  static final ThemeData darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    primaryColor: thunderColor,
+    scaffoldBackgroundColor: thunderColor,
+    unselectedWidgetColor: secondaryColor,
+
+    cardTheme: CardTheme(
+      color: flameGray,
+      shadowColor: oldRedColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: siennaColor,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      ),
+    ),
+    textTheme: const TextTheme(
+      headlineLarge: TextStyle(
+        color: Colors.white,
+        fontSize: 24.0,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
 }

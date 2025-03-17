@@ -1,9 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:meal/DataBase/fetch_db.dart';
-import 'package:meal/DataBase/state_mgt.dart';
 import 'package:meal/Models/meal_card.dart';
 import 'package:meal/Models/user_data.dart';
 import 'package:meal/Screens/profile.dart';

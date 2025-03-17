@@ -38,13 +38,8 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
   bool isFirst = true;
   final updatedUserData = Hive.box('userData').get('userInfo');
 
-  void _loadImage() async {
-    final imageData = await fetchImage(widget.recipeID, widget.imageURL);
-    if (mounted) {
-      setState(() {
-        _imageData = imageData;
-      });
-    }
+  _loadImage() async {
+    return await fetchImage(widget.recipeID, widget.imageURL);
   }
 
 
@@ -65,12 +60,20 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserID>(context);
-    Write write = Write(uid: user.uid);
+    // Write write = Write(uid: user.uid);
 
-    if(!updatedRecent) {
-      write.updateRecent(widget.recipeID);
-      updatedRecent = true;
-    }
+    final updatedUserData = Hive.box('userData').get('userInfo');
+
+    widget.userInfo?.updateUserData(
+        uid: user.uid,
+        recipeId: widget.recipeID,
+        isRecent: true,
+      );
+
+    // if(!updatedRecent) {
+    //   write.updateRecent(widget.recipeID);
+    //   updatedRecent = true;
+    // }
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -136,44 +139,66 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Image with overlay
-          Hero(
-            tag: widget.recipeID,
-            child: Container(
-              height: 250,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                image: _imageData != null
-                    ? DecorationImage(
-                  fit: BoxFit.cover,
-                  image: MemoryImage(_imageData!),
-                ) : DecorationImage(
-                    fit: BoxFit.cover,
-                  image: NetworkImage(widget.imageURL)),
-                ),
-              child: Container(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.fromLTRB(6, 6, 20, 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black26.withOpacity(.7),
-                        borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
-                      ),
-                      child: Text(
-                        widget.foodName,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+          Stack(
+            children: [
+              Hero(
+                tag: widget.recipeID,
+                child: FutureBuilder<Uint8List>(
+                  future: _loadImage(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      // Display a placeholder or loading indicator
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      // Handle error
+                      return Center(child: Text('Error loading image'));
+                    } else {
+                      return Container(
+                        height: 250,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          image: _imageData != null
+                              ? DecorationImage(
+                            fit: BoxFit.cover,
+                            image: MemoryImage(snapshot.data!),
+                          ) : DecorationImage(
+                              fit: BoxFit.cover,
+                              image: NetworkImage(widget.imageURL)),
+                        ),
+                      );
+                    }
+                  }
+                  ),
+              ),
+              Hero(
+                tag: widget.foodName,
+                child: Container(
+                  height: 250,
+                  width: double.infinity,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.fromLTRB(6, 6, 20, 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black26.withOpacity(.7),
+                          borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
+                        ),
+                        child: Text(
+                          widget.foodName,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.all(15.0),

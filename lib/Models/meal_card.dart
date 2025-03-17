@@ -59,15 +59,15 @@ class _MealCardState extends State<MealCard> {
 
     return InkWell(
       onTap: () {
-        final updatedUserData = Hive.box('userData').get('userInfo');
+        // final updatedUserData = Hive.box('userData').get('userInfo');
 
-        if (updatedUserData != null) {
-          Provider.of<UserDataModel>(context, listen: false).updateUserData(
-            uid: user.uid,
-            recipeId: widget.meal['id'],
-            isRecent: true,
-          );
-        }
+        // if (updatedUserData != null) {
+        //   Provider.of<UserDataModel>(context, listen: false).updateUserData(
+        //     uid: user.uid,
+        //     recipeId: widget.meal['id'],
+        //     isRecent: true,
+        //   );
+        // }
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (BuildContext context) =>

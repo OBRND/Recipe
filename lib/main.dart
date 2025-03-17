@@ -45,6 +45,8 @@ class _MyAppState extends State<MyApp> {
         child: MaterialApp(
             title: 'Meal planner',
             theme: AppThemes.lightTheme,
+            // darkTheme: AppThemes.darkTheme,
+            // themeMode: ThemeMode.system,
             home: AuthWrapper()
         ));
   }
