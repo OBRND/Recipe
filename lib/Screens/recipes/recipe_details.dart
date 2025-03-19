@@ -36,23 +36,23 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
   bool updatedRecent = false;
   Uint8List? _imageData;
   bool isFirst = true;
-  final updatedUserData = Hive.box('userData').get('userInfo');
+  late final updatedUserData;
+  bool _hasUpdatedUserData = false;
 
-  _loadImage() async {
+  Future<Uint8List?> _loadImage() async {
     return await fetchImage(widget.recipeID, widget.imageURL);
   }
-
 
   @override
   void initState() {
     super.initState();
+    updatedUserData = Hive.box('userData').get('userInfo');
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 200), // Short duration for pop effect
+      duration: const Duration(milliseconds: 200),
       vsync: this,
-      lowerBound: 1, // Slightly smaller scale
-      upperBound: 1.5, // Slightly larger scale
+      lowerBound: 1,
+      upperBound: 1.5,
     );
-    _loadImage();
   }
 
 
@@ -62,13 +62,16 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
     final user = Provider.of<UserID>(context);
     // Write write = Write(uid: user.uid);
 
-    final updatedUserData = Hive.box('userData').get('userInfo');
-
-    widget.userInfo?.updateUserData(
-        uid: user.uid,
-        recipeId: widget.recipeID,
-        isRecent: true,
-      );
+    // Delay the operation using a Future
+    Future.microtask(() {
+      Future.delayed(Duration(milliseconds: 200), () {
+        widget.userInfo?.updateUserData(
+          uid: user.uid,
+          recipeId: widget.recipeID,
+          isRecent: true,
+        );
+      });
+    });
 
     // if(!updatedRecent) {
     //   write.updateRecent(widget.recipeID);
@@ -141,23 +144,24 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
           // Image with overlay
           Stack(
             children: [
-              Hero(
-                tag: widget.recipeID,
-                child: FutureBuilder<Uint8List>(
-                  future: _loadImage(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      // Display a placeholder or loading indicator
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      // Handle error
-                      return Center(child: Text('Error loading image'));
-                    } else {
-                      return Container(
+              FutureBuilder<Uint8List?>(
+                future: _loadImage(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    // Display a placeholder or loading indicator
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    // Handle error
+                    return Center(child: Text('Error loading image'));
+                  }
+                  else {
+                    return Hero(
+                      tag: widget.recipeID,
+                      child: Container(
                         height: 250,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          image: _imageData != null
+                          image: snapshot.data != null
                               ? DecorationImage(
                             fit: BoxFit.cover,
                             image: MemoryImage(snapshot.data!),
@@ -165,37 +169,34 @@ class _RecipeDetailsPageState extends State<RecipeDetailsPage> with SingleTicker
                               fit: BoxFit.cover,
                               image: NetworkImage(widget.imageURL)),
                         ),
-                      );
-                    }
+                      ),
+                    );
                   }
-                  ),
-              ),
-              Hero(
-                tag: widget.foodName,
-                child: Container(
-                  height: 250,
-                  width: double.infinity,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.fromLTRB(6, 6, 20, 6),
-                        decoration: BoxDecoration(
-                          color: Colors.black26.withOpacity(.7),
-                          borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
-                        ),
-                        child: Text(
-                          widget.foodName,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                }
+                ),
+              Container(
+                height: 250,
+                width: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.fromLTRB(6, 6, 20, 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black26.withOpacity(.7),
+                        borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
+                      ),
+                      child: Text(
+                        widget.foodName,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
