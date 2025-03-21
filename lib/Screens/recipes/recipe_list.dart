@@ -1,3 +1,4 @@
+import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -55,10 +56,15 @@ class _RecipeListState extends State<RecipeList> {
     isLoading = widget.swap;
   }
 
+  Future<List<Map<String, dynamic>>> _fetchRecipesInIsolate(String uid, int index) async {
+    return await Fetch(uid: uid).getRecipesByType(index + 1);
+  }
+
   Future<void> _fetchRecipes(String uid, int? index) async {
     if (index == null) return;
 
-    final fetched = await Fetch(uid: uid).getRecipesByType(index + 1);
+    final fetched = !widget.swap ? await Isolate.run(() => _fetchRecipesInIsolate(uid, index))
+        : await Fetch(uid: uid).getRecipesByType(index + 1);
 
     if (mounted) {
       setState(() {
