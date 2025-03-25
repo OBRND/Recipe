@@ -197,80 +197,117 @@ class _MealCardState extends State<MealCard> {
                   ),
                 ),
               ),
-             widget.home ? Stack(
-                  children: [
-                    Card(
-                      elevation: 5,
-                      margin: EdgeInsets.all(0),
-                      child: Container(
-                        width: MediaQuery.sizeOf(context).width / 2.8,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
-                          image: _imageData != null
-                              ? DecorationImage(
-                            fit: BoxFit.fill,
-                            image: MemoryImage(_imageData!),
-                          )
-                              : DecorationImage(
-                            fit: BoxFit.fill,
-                            image: NetworkImage(resizeImageUrl(widget.meal['imageUrl'])),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 50,
-                      height: 25,
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(bottomRight: Radius.circular(15),
-                          topLeft:  Radius.circular(12),
-                        ),
-                        color: ChildColorModel.colorOfChild(widget.index - 1).withOpacity(.8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${userInfo?.children[widget.index - 1]['name']}',
-                          style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ]
-              )
-                 : Card(
-               elevation: 5,
-               margin: EdgeInsets.all(0),
-               child: Hero(
-                 tag: widget.meal['id'],
-                 child: Container(
-                   width: MediaQuery.sizeOf(context).width / 2.8,
-                   decoration: BoxDecoration(
-                     borderRadius: BorderRadius.all(Radius.circular(12)),
-                     image: _imageData != null
-                         ? DecorationImage(
-                       fit: BoxFit.fill,
-                       image: MemoryImage(_imageData!),
-                     )
-                         : DecorationImage(
-                       fit: BoxFit.fill,
-                       image: NetworkImage(resizeImageUrl(widget.meal['imageUrl'])),
-                     ),
-                   ),
-                 ),
-               ),
-             ),
+             widget.home ? HomeStack(imageData: _imageData, widget: widget, userInfo: userInfo)
+                 : WithoutStack(widget: widget, imageData: _imageData),
             ]
         ),
       ),
     );
   }
 
-  String resizeImageUrl(String url, {int width = 400, int height = 400}) {
-    if (url.contains('/upload/')) {
-      return url.replaceFirst(
-        '/upload/',
-        '/upload/c_fill,w_${width},h_${height}/',
-      );
-    }
-    return url;
+}
+
+String resizeImageUrl(String url, {int width = 400, int height = 400}) {
+  if (url.contains('/upload/')) {
+    return url.replaceFirst(
+      '/upload/',
+      '/upload/c_fill,w_${width},h_${height}/',
+    );
+  }
+  return url;
+}
+
+class WithoutStack extends StatelessWidget {
+  const WithoutStack({
+    super.key,
+    required this.widget,
+    required Uint8List? imageData,
+  }) : _imageData = imageData;
+
+  final MealCard widget;
+  final Uint8List? _imageData;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 5,
+      margin: EdgeInsets.all(0),
+      child: Hero(
+        tag: widget.meal['id'],
+        child: Container(
+          width: MediaQuery
+              .sizeOf(context)
+              .width / 2.8,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+            image: _imageData != null
+                ? DecorationImage(
+              fit: BoxFit.fill,
+              image: MemoryImage(_imageData!),
+            )
+                : DecorationImage(
+              fit: BoxFit.fill,
+              image: NetworkImage(resizeImageUrl(widget.meal['imageUrl'])),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HomeStack extends StatelessWidget {
+  const HomeStack({
+    super.key,
+    required Uint8List? imageData,
+    required this.widget,
+    required this.userInfo,
+  }) : _imageData = imageData;
+
+  final Uint8List? _imageData;
+  final MealCard widget;
+  final UserDataModel? userInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+         children: [
+           Card(
+             elevation: 5,
+             margin: EdgeInsets.all(0),
+             child: Container(
+               width: MediaQuery.sizeOf(context).width / 2.8,
+               decoration: BoxDecoration(
+                 borderRadius: BorderRadius.all(Radius.circular(12)),
+                 image: _imageData != null
+                     ? DecorationImage(
+                   fit: BoxFit.fill,
+                   image: MemoryImage(_imageData!),
+                 )
+                     : DecorationImage(
+                   fit: BoxFit.fill,
+                   image: NetworkImage(resizeImageUrl(widget.meal['imageUrl'])),
+                 ),
+               ),
+             ),
+           ),
+           Container(
+             width: 50,
+             height: 25,
+             decoration: BoxDecoration(
+               borderRadius: const BorderRadius.only(bottomRight: Radius.circular(15),
+                 topLeft:  Radius.circular(12),
+               ),
+               color: ChildColorModel.colorOfChild(widget.index - 1).withOpacity(.8),
+             ),
+             child: Center(
+               child: Text(
+                 '${userInfo?.children[widget.index - 1]['name']}',
+                 style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+               ),
+             ),
+           ),
+         ]
+     );
   }
 }

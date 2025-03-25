@@ -119,11 +119,11 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
               ),
               borderRadius: BorderRadius.circular(30),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(2.0),
+            child: const Padding(
+              padding: EdgeInsets.all(2.0),
               child: Icon(Icons.person_outline_rounded),
             ))),
-        title: Text(
+        title: const Text(
             "Meals for the day",
             style: TextStyle(color: Color.fromARGB(255, 39, 32, 34), fontWeight: FontWeight.w300, fontSize: 18)),
         actions: [
@@ -131,9 +131,9 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
             Navigator.of(context).push(
               MaterialPageRoute(
                   builder: (BuildContext context) =>
-                      ShoppingList()));
+                      const ShoppingList()));
           },
-              icon: Icon(Icons.shopping_cart_outlined))
+              icon: const Icon(Icons.shopping_cart_outlined))
         ],
       ),
       body: Column(
@@ -206,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
     if (userInfo == null) {
       // Show a loading indicator while waiting for the user data.
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     for(int i = 0 ; i < userInfo.children.length; i++) {

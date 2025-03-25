@@ -69,21 +69,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
   }
 
 
-  Future<List<Map<String, dynamic>>> getRecipeDetails(UserDataModel? userData, bool isRecentlyViewed, String uid) async {
-    if (userData == null) {
-      return [];
-    }
 
-    final recipeIds = isRecentlyViewed ? userData.recentRecipes : userData.savedRecipes;
-
-    if (recipeIds.isEmpty) {
-      return [];
-    }
-
-    // Fetch additional recipe details from Hive
-    final recipes = await getSavedRecipesFromHive(recipeIds, uid);
-    return recipes;
-  }
 
   @override
   void dispose() {
@@ -207,13 +193,7 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
             ),
           ),
         ],
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildRecipeList(true),
-            _buildRecipeList(false),
-          ],
-        ),
+        body: RecipeTabContent(tabController: _tabController),
       ),
       floatingActionButton:  FloatingActionButton(onPressed: (){
 
@@ -310,9 +290,56 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
     );
   }
 
+
+}
+
+class RecipeTabContent extends StatefulWidget {
+  final TabController tabController;
+
+  const RecipeTabContent({Key? key, required this.tabController}) : super(key: key);
+
+  @override
+  State<RecipeTabContent> createState() => _RecipeTabContentState();
+}
+
+class _RecipeTabContentState extends State<RecipeTabContent> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true; // Keep state alive
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context); // Ensure state is kept alive
+    return TabBarView(
+      controller: widget.tabController,
+      children: [
+        _buildRecipeList(true),
+        _buildRecipeList(false),
+      ],
+    );
+  }
+
   Widget _buildRecipeList(bool isRecentlyViewed) {
     final userData = context.watch<UserDataModel?>();
     final user = Provider.of<UserID>(context);
+
+    Future<List<Map<String, dynamic>>> getRecipeDetails(UserDataModel? userData, bool isRecentlyViewed, String uid) async {
+      if (userData == null) {
+        return [];
+      }
+
+      final recipeIds = isRecentlyViewed ? userData.recentRecipes : userData.savedRecipes;
+
+      if (recipeIds.isEmpty) {
+        return [];
+      }
+
+      // Fetch additional recipe details from Hive
+      final recipes = await getSavedRecipesFromHive(recipeIds, uid);
+      return recipes;
+    }
+
 
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: getRecipeDetails(userData, isRecentlyViewed, user.uid),
