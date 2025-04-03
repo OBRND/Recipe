@@ -392,6 +392,12 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "google_generative_ai",
+      "rootUri": "file:///C:/Users/Administrator/AppData/Local/Pub/Cache/hosted/pub.dev/google_generative_ai-0.4.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "graphs",
       "rootUri": "file:///C:/Users/Administrator/AppData/Local/Pub/Cache/hosted/pub.dev/graphs-2.3.2",
       "packageUri": "lib/",
@@ -896,7 +902,7 @@
       "languageVersion": "3.5"
     }
   ],
-  "generated": "2025-02-27T14:13:51.529414Z",
+  "generated": "2025-04-03T12:19:31.870953Z",
   "generator": "pub",
   "generatorVersion": "3.5.3",
   "flutterRoot": "file:///C:/Users/Administrator/dev/flutter",

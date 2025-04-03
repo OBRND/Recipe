@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:meal/DataBase/state_mgt.dart';
 import 'package:provider/provider.dart';
 import '../../DataBase/fetch_db.dart';
 import '../../DataBase/storage.dart';

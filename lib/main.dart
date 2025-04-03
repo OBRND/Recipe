@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:meal/Auth/auth_service.dart';
 import 'package:meal/Models/user_id.dart';
@@ -9,6 +9,7 @@ import 'package:meal/Theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'Models/connection.dart';
 import 'Models/user_data.dart';
+import '../Keys.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,7 @@ void main() async {
   await Hive.openBox('images');
   await Hive.openBox('userData');
   // debugRepaintRainbowEnabled = true;
+
   runApp(
     ChangeNotifierProvider(
         create: (_) => ConnectivityNotifier(),
