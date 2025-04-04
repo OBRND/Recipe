@@ -44,7 +44,7 @@ class _RecipeListState extends State<RecipeList> {
   String searchQuery = '';
   String selectedFilter = 'All';
   final List<String> filterOptions = ['All', 'Age Group', 'Gluten-Free', 'Vegan'];
-  late bool isLoading;
+  bool isLoading = true;
   int recipesIndex = 0;
   List<Map<String, dynamic>> weeklyPlan = [];
   bool loadfinished = false;
@@ -52,7 +52,6 @@ class _RecipeListState extends State<RecipeList> {
   @override
   void initState() {
     super.initState();
-    isLoading = widget.swap;
   }
 
   Future<List<Map<String, dynamic>>> _fetchRecipesInIsolate(String uid, int index) async {
@@ -76,6 +75,23 @@ class _RecipeListState extends State<RecipeList> {
     }
   }
 
+  Future<void> _fetch(String uid) async{
+    Fetch fetch = Fetch(uid: uid);
+     if(widget.index != null){
+       List<Map<String, dynamic>> recipes = await fetch.getRecipesByType(widget.index!);
+       setState(() {
+         widget.recipes = recipes;
+         isLoading = false;
+       });
+     }  else {
+       List<Map<String, dynamic>> recipes = await fetch.getAllRecipes();
+       setState(() {
+         widget.recipes = recipes;
+         isLoading = false;
+       });
+     }
+  }
+
   _loadImage(mealId, [recipeUrl]) {
     final imageBox = Hive.box('images');
 
@@ -92,10 +108,14 @@ class _RecipeListState extends State<RecipeList> {
   Widget build(BuildContext context) {
     final user = Provider.of<UserID>(context);
     final write = Write(uid: user.uid);
+    if (!widget.swap && isLoading) {
+      _fetch(user.uid);
+    }
     if (widget.swap && widget.index != null && !loadfinished) {
       _fetchRecipes(user.uid, widget.index);
     }
     print(widget.index);
+
 
     final filteredRecipes = widget.recipes.where((recipe) {
       final name = recipe['name'];

@@ -242,14 +242,14 @@ class _RecipeScreenState extends State<RecipeScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(10),
         onTap: () async {
           if (index == 0) {
-            List<Map<String, dynamic>> recipes = await fetch.getAllRecipes();
+            // List<Map<String, dynamic>> recipes = await fetch.getAllRecipes();
             Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => RecipeList(recipes: recipes, userData: userData, swap: false, index: null, meal: {}, day: null, name: [],
+                builder: (context) => RecipeList(recipes: [], userData: userData, swap: false, index: null, meal: {}, day: null, name: [],
                   child: null,)));
           } else {
-            List<Map<String, dynamic>> recipes = await fetch.getRecipesByType(index);
+            // List<Map<String, dynamic>> recipes = await fetch.getRecipesByType(index);
             Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => RecipeList(recipes: recipes, userData: userData, swap: false, index: null, meal: {}, day: null, name: [],
+                builder: (context) => RecipeList(recipes: [], userData: userData, swap: false, index: index, meal: {}, day: null, name: [],
                   child: null,)));
           }
         },
