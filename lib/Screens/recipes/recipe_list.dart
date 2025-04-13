@@ -21,7 +21,7 @@ class RecipeList extends StatefulWidget {
   final int? child;
   final Map meal;
   final List? name;
-  final UserDataModel? userInfo;
+  // final UserDataModel? userInfo;
 
   RecipeList({
     super.key,
@@ -33,7 +33,7 @@ class RecipeList extends StatefulWidget {
     required this.day,
     required this.child,
     required this.name,
-    this.userInfo,
+    // this.userInfo,
   });
 
   @override
@@ -452,9 +452,9 @@ class _RecipeListState extends State<RecipeList> {
                         widget.day!,
                         widget.child!,
                         widget.userData!.children,
-                          widget.userData!
+                          // widget.userData!
                       );
-                      widget.userInfo!.updateUserData(
+                      widget.userData!.updateUserData(
                         uid: uid,
                         recipeId: widget.meal['id'],
                         isRecent: true,

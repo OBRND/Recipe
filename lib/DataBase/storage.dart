@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:meal/DataBase/fetch_db.dart';
+import 'package:meal/Models/user_data.dart';
 import 'dart:io';
 import '../Keys.dart';
 
@@ -135,37 +137,74 @@ Future<void> createCustomMealPlanWithSwap(
     int dayIndex,
     int child,
     List children,
-    UserDataModel
     ) async {
   final userBox = Hive.box('userData');
   final recipesBox = Hive.box('recipes');
 
-
   print('****************************Commencing**************************');
 
-  // Swap the selected meal with the new meal ID on the specified day and meal type
+  // Swap the selected meal with the new full recipe details
   final mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
   final mealType = mealTypes[mealIndex];
 
+  // Fetch the new meal details from the recipes box
+  final newMeal = recipesBox.get(newMealId);
+
+  if (newMeal == null) {
+    print("New meal not found in recipes box!");
+    return;
+  }
+
   // Ensure the weekly plan is within bounds and replace the specific meal
   if (weeklyPlan[child][dayIndex.toString()][mealIndex]['mealType'] == mealType) {
-    weeklyPlan[child][dayIndex.toString()][mealIndex]['id'] = newMealId;
+    print("Old Meal ID: ${weeklyPlan[child][dayIndex.toString()][mealIndex]['id']}");
+    print({
+      'imageUrl': newMeal['imageUrl'],
+      'name': newMeal['name'],
+      'course': newMeal['course'],
+      'ingredients': newMeal['ingredients'],
+      'calories': newMeal['calories'],
+      'favoritesCount': newMeal['favoritesCount'],
+      'cookingTime': newMeal['cookingTime'],
+      'mealType': newMeal['mealType'],
+      'id': newMealId,
+    });
+    // Replace with the full new meal data
+    weeklyPlan[child][dayIndex.toString()][mealIndex] = {
+      'imageUrl': newMeal['imageUrl'],
+      'name': newMeal['name'],
+      'course': newMeal['course'],
+      'ingredients': newMeal['ingredients'],
+      'calories': newMeal['calories'],
+      'favoritesCount': newMeal['favoritesCount'],
+      'cookingTime': newMeal['cookingTime'],
+      'mealType': newMeal['mealType'],
+      'id': newMealId,
+    };
+
+    print("New Meal: ${weeklyPlan[child][dayIndex.toString()][mealIndex]}");
   }
 
   // Save the updated weekly plan to Hive
   await recipesBox.put('weeklyPlan', weeklyPlan);
 
+  var data = await recipesBox.get('weeklyPlan');
+  for (int i = 0; i < data.length; i++) {
+    log("-------------------");
+    log(await data[i].toString());
+    log("-------------------");
+  }
+
   // Update the swapped count in Hive
   final userInfo = userBox.get('userInfo');
   if (userInfo != null) {
-    final updatedUserInfo = UserDataModel.fromMap(userInfo, false);
-    updatedUserInfo.swapped += 1;
-    updatedUserInfo.custom = true;
-    await userBox.put('userInfo', updatedUserInfo.toMap());
+    print("====================");
+    print(userInfo.toString());
+    print("====================");
+    print("====================");
   }
-
-  print('****************************Custom meal plan created with swap in Hive.**************************');
 }
+
 
 Future<List<Map<String, dynamic>>> getSavedRecipesFromHive(recipeIds, uid) async {
   final recipesBox = Hive.box('recipes');

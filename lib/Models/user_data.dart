@@ -19,10 +19,10 @@ class UserDataModel with ChangeNotifier{
   final List<dynamic> children;
 
   @HiveField(4)
-  final bool custom;
+  bool custom;
 
   @HiveField(5)
-  final int swapped;
+  int swapped;
 
   @HiveField(6)
   final DateTime lastUpdated;
@@ -64,6 +64,8 @@ class UserDataModel with ChangeNotifier{
         ? (data['lastUpdated'] as Timestamp).toDate() // Convert Timestamp to DateTime
         : DateTime.parse(data['lastUpdated'])) // Fallback for String (if needed)
         : DateTime.now();
+
+    print('reached');
 
     return UserDataModel(
       name: data['name'] ?? '',

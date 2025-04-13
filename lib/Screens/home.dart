@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -33,6 +35,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   void _loadRecipes(String uid, List<String> ageGroups, bool custom, int swap) {
     print('Reloading recipes...');
     final recipesBox = Hive.box('recipes');
+    // log(recipesBox.getAt(0).toString());
 
     // Always load from Hive
     _recipeFuture = Future(() async {
@@ -292,7 +295,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                         day: selected,
                         child: weeklyPlan.indexOf(dayData),
                         name: ageGroups,
-                        userInfo: userInfo,
+                        // userInfo: userInfo,
                       ),
                     ),
                   );
