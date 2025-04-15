@@ -58,9 +58,7 @@ class ConnectivityNotifier with ChangeNotifier  {
     }
   }
 
-  Future<void> _synchronizeWeeklyData(
-      String uid,
-      ) async {
+  Future<void> _synchronizeWeeklyData( String uid) async {
     final userBox = Hive.box('userData');
     final recipesBox = Hive.box('recipes');
     final weeklyPlan = recipesBox.get('weeklyPlan');

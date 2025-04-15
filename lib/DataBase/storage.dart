@@ -166,7 +166,7 @@ Future<void> createCustomMealPlanWithSwap(
       'calories': newMeal['calories'],
       'favoritesCount': newMeal['favoritesCount'],
       'cookingTime': newMeal['cookingTime'],
-      'mealType': newMeal['mealType'],
+      'mealType': mealType,
       'id': newMealId,
     });
     // Replace with the full new meal data
@@ -178,7 +178,7 @@ Future<void> createCustomMealPlanWithSwap(
       'calories': newMeal['calories'],
       'favoritesCount': newMeal['favoritesCount'],
       'cookingTime': newMeal['cookingTime'],
-      'mealType': newMeal['mealType'],
+      'mealType': mealType,
       'id': newMealId,
     };
 
