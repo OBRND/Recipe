@@ -69,7 +69,7 @@ class _ShoppingListState extends State<ShoppingList> with AutomaticKeepAliveClie
                   quantity = (ingredient['quantity'] / 1000).toInt();
                 } else {
                   quantity = ingredient['quantity'];
-                  unit = ingredient['unit'];
+                  unit = ingredient['measurement'];
                 }
                 bool isChecked = ingredient['isChecked'] ?? false;
 

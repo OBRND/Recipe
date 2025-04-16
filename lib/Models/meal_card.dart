@@ -119,7 +119,7 @@ class _MealCardState extends State<MealCard> {
                                   fontSize: 12,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 24),
                               Row(
                                 children: [
                                   Icon(Icons.favorite, size: 16,
@@ -129,7 +129,7 @@ class _MealCardState extends State<MealCard> {
                                     widget.meal['favoritesCount'].toString(),
                                     style: TextStyle(
                                       color: Colors.grey[600],
-                                      fontSize: 14,
+                                      fontSize: 12,
                                     ),
                                   ),
                                   const SizedBox(width: 16),
@@ -141,7 +141,7 @@ class _MealCardState extends State<MealCard> {
                                     widget.meal['cookingTime'],
                                     style: TextStyle(
                                       color: Colors.grey[600],
-                                      fontSize: 14,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
@@ -291,19 +291,22 @@ class HomeStack extends StatelessWidget {
                ),
              ),
            ),
-           Container(
-             width: 50,
-             height: 25,
-             decoration: BoxDecoration(
-               borderRadius: const BorderRadius.only(bottomRight: Radius.circular(15),
-                 topLeft:  Radius.circular(12),
+           Padding(
+             padding: const EdgeInsets.only(top: 10),
+             child: Container(
+               width: 50,
+               height: 25,
+               decoration: BoxDecoration(
+                 borderRadius: const BorderRadius.only(bottomRight: Radius.circular(15),
+                   topRight:  Radius.circular(12),
+                 ),
+                 color: ChildColorModel.colorOfChild(widget.index - 1).withOpacity(.8),
                ),
-               color: ChildColorModel.colorOfChild(widget.index - 1).withOpacity(.8),
-             ),
-             child: Center(
-               child: Text(
-                 '${userInfo?.children[widget.index - 1]['name']}',
-                 style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+               child: Center(
+                 child: Text(
+                   '${userInfo?.children[widget.index - 1]['name']}',
+                   style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                 ),
                ),
              ),
            ),

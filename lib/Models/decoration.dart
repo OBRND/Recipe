@@ -16,7 +16,7 @@ const textinputdecoration = InputDecoration(
 );
 
 BoxDecoration boxDecoration = BoxDecoration(
-  color: Color(0xe7f8f3f1),
+  color: Colors.white,
   borderRadius: BorderRadius.circular(12),
   border: Border.all(color: greyCustom),
 );

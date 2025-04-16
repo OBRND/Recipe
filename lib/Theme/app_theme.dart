@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppThemes {
   // Define colors
   static const Color dominantColor = Color(0xFFFFFFFF); // White
-  static const Color scaffoldColor = Color(0xFAFFFBFA); // White
+  static const Color scaffoldColor = Color(0xF4F6F6F6); // White
   static const Color secondaryColor = Color(0xFFFAEFEB); // Silver
   static const Color accentColor = Color(0xDBF32607); // International Orange
   static const Color thunderColor = Color(0xFF251D1D); // Thunder
@@ -20,7 +20,7 @@ class AppThemes {
     primaryColor: dominantColor,
     scaffoldBackgroundColor: scaffoldColor,
     appBarTheme: const AppBarTheme(
-      color: dominantColor,
+      color: scaffoldColor,
       surfaceTintColor: accentColor,
         titleTextStyle: TextStyle(color: thunderColor, fontWeight: FontWeight.bold, fontSize: 18)
     ),

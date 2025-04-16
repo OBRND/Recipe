@@ -146,6 +146,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
           Padding(
             padding: const EdgeInsets.only(left: 8, right: 8),
             child: EasyDateTimeLine(
+              activeColor: Colors.transparent,
               initialDate: DateTime.now(),
               onDateChange: (selectedDate) async {
                 setState(() {
@@ -155,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
               timeLineProps: EasyTimeLineProps(
                 decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
-                color: Colors.grey[300],
+                // color: Colors.grey[300],
               ),
               ),
               headerProps: const EasyHeaderProps(
@@ -164,21 +165,21 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                 monthPickerType: MonthPickerType.switcher,
                 dateFormatter: DateFormatter.fullDateDMY(),
               ),
-              dayProps: EasyDayProps(
-                inactiveDayStrStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                activeDayStrStyle: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
-                todayStrStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
-                inactiveDayNumStyle: const TextStyle(fontSize: 12, color: Colors.grey),
-                activeDayNumStyle: const TextStyle(fontSize: 12, color: Colors.white),
-                todayNumStyle: const TextStyle(fontSize: 12),
-                height: 60,
-                width: 60,
-                todayHighlightColor: const Color(0xff9da50a),
-                todayStyle: const DayStyle(
+              dayProps: const EasyDayProps(
+                inactiveDayStrStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                activeDayStrStyle: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+                todayStrStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black),
+                inactiveDayNumStyle: TextStyle(fontSize: 12, color: Colors.grey),
+                activeDayNumStyle: TextStyle(fontSize: 12, color: Colors.white),
+                todayNumStyle: TextStyle(fontSize: 12),
+                height: 58,
+                width: 58,
+                todayHighlightColor: Color(0xff9da50a),
+                todayStyle: DayStyle(
                     borderRadius: 50
                 ),
                 dayStructure: DayStructure.dayStrDayNum,
-                activeDayStyle: const DayStyle(
+                activeDayStyle: DayStyle(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(50)),
                     color: Color.fromARGB(219, 243, 38, 7)
@@ -186,8 +187,8 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
                 ),
                 inactiveDayStyle: DayStyle(
                   decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(50)),
-                      color: Colors.grey[200]
+                    borderRadius: BorderRadius.all(Radius.circular(50)),
+                      color: Colors.white
                   ),
                   borderRadius: 50.0,
                 ),
