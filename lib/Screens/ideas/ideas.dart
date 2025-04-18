@@ -75,7 +75,6 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
     super.build(context);
     return Scaffold(
         body: NestedScrollView(
-          controller: _scrollController,
           headerSliverBuilder: (context, innerBoxIsScrolled) =>
           [
             SliverAppBar(
@@ -120,7 +119,8 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
                 ],
               ),
             ),
-          ],
+          ], controller: _scrollController,
+
           body: TabBarView(
             controller: _tabController,
             children: [
@@ -144,13 +144,13 @@ class _IdeasTabState extends State<IdeasTab> with SingleTickerProviderStateMixin
                   opacity: isVisible ? 1 : 0,
                   child: FloatingActionButton.extended(
                     label: Container(
-                      width: 120,
+                      width: 132,
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Padding(
-                            padding: EdgeInsets.only(right: 6),
-                            child: Icon(Icons.add, color: Colors.white),
+                            padding: EdgeInsets.only(right: 4),
+                            child: Icon(Icons.add, color: Colors.white, size: 20, weight: 900),
                           ),
                           Text('Share recipe', style: TextStyle(
                               color: Colors.white

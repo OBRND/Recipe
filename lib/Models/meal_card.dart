@@ -297,8 +297,8 @@ class HomeStack extends StatelessWidget {
                width: 50,
                height: 25,
                decoration: BoxDecoration(
-                 borderRadius: const BorderRadius.only(bottomRight: Radius.circular(15),
-                   topRight:  Radius.circular(12),
+                 borderRadius: const BorderRadius.only(bottomRight: Radius.circular(8),
+                   topRight:  Radius.circular(8),
                  ),
                  color: ChildColorModel.colorOfChild(widget.index - 1).withOpacity(.8),
                ),

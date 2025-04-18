@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:meal/Models/meal_card.dart';
 import 'package:meal/Models/user_data.dart';
@@ -31,6 +32,12 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   bool _isLoading = false;
   bool first = true;
   int swapped = 0;
+  bool _isDateTimeLineVisible = true;
+  final _animationDuration = const Duration(milliseconds: 300);
+  double _lastScrollOffset = 0;
+  DateTime _lastScrollTime = DateTime.now();
+  bool _isAnimating = false;
+
 
   void _loadRecipes(String uid, List<String> ageGroups, bool custom, int swap) {
     print('Reloading recipes...');
@@ -80,9 +87,12 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    checkHiveDatabase(); // Check and display stored recipes in the terminal
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,99 +113,176 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: (){
-          Navigator.of(context).push(
-          MaterialPageRoute(
-              builder: (BuildContext context) =>
-                  Consumer<UserDataModel?>(
-                    builder: (BuildContext context, UserDataModel? value,
-                        Widget? child) {
-                      return Profile(info: UserInfo.children,);
-                    },
-                  )),);
-          },
+        leading: IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (BuildContext context) =>
+                        Consumer<UserDataModel?>(
+                          builder: (BuildContext context, UserDataModel? value, Widget? child) {
+                            return Profile(info: UserInfo.children,);
+                          },
+                        )
+                ),
+              );
+            },
             icon: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                width: 2,
-                  color: Colors.black.withOpacity(0.7)
-              ),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.all(2.0),
-              child: Icon(Icons.person_outline_rounded),
-            ))),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                      width: 2,
+                      color: Colors.black.withOpacity(0.7)
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.all(2.0),
+                  child: Icon(Icons.person_outline_rounded),
+                )
+            )
+        ),
         title: const Text(
             "Meals for the day",
-            style: TextStyle(color: Color.fromARGB(255, 39, 32, 34), fontWeight: FontWeight.w300, fontSize: 18)),
+            style: TextStyle(color: Color.fromARGB(255, 39, 32, 34), fontWeight: FontWeight.w300, fontSize: 18)
+        ),
         actions: [
-          IconButton(onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      const ShoppingList()));
-          },
-              icon: const Icon(Icons.shopping_cart_outlined))
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => const ShoppingList()
+                    )
+                );
+              },
+              icon: const Icon(Icons.shopping_cart_outlined)
+          )
         ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8),
-            child: EasyDateTimeLine(
-              activeColor: Colors.transparent,
-              initialDate: DateTime.now(),
-              onDateChange: (selectedDate) async {
-                setState(() {
-                  selected = selectedDate.weekday;
-                });
-              },
-              timeLineProps: EasyTimeLineProps(
-                decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-                // color: Colors.grey[300],
-              ),
-              ),
-              headerProps: const EasyHeaderProps(
-                showMonthPicker: false,
-                showHeader: false,
-                monthPickerType: MonthPickerType.switcher,
-                dateFormatter: DateFormatter.fullDateDMY(),
-              ),
-              dayProps: const EasyDayProps(
-                inactiveDayStrStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                activeDayStrStyle: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
-                todayStrStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black),
-                inactiveDayNumStyle: TextStyle(fontSize: 12, color: Colors.grey),
-                activeDayNumStyle: TextStyle(fontSize: 12, color: Colors.white),
-                todayNumStyle: TextStyle(fontSize: 12),
-                height: 58,
-                width: 58,
-                todayHighlightColor: Color(0xff9da50a),
-                todayStyle: DayStyle(
-                    borderRadius: 50
-                ),
-                dayStructure: DayStructure.dayStrDayNum,
-                activeDayStyle: DayStyle(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(50)),
-                    color: Color.fromARGB(219, 243, 38, 7)
+          // Combined height and slide animation
+          AnimatedContainer(
+            duration: _animationDuration,
+            height: _isDateTimeLineVisible ? 60 : 0,
+            curve: Curves.easeInOut,
+            child: ClipRect(
+              child: AnimatedSlide(
+                offset: Offset(0, _isDateTimeLineVisible ? 0 : -1),
+                duration: _animationDuration,
+                curve: Curves.easeInOut,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 8),
+                  child: EasyDateTimeLine(
+                    activeColor: Colors.transparent,
+                    initialDate: DateTime.now(),
+                    onDateChange: (selectedDate) async {
+                      setState(() {
+                        selected = selectedDate.weekday;
+                      });
+                    },
+                    timeLineProps: EasyTimeLineProps(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    headerProps: const EasyHeaderProps(
+                      showMonthPicker: false,
+                      showHeader: false,
+                      monthPickerType: MonthPickerType.switcher,
+                      dateFormatter: DateFormatter.fullDateDMY(),
+                    ),
+                    dayProps: const EasyDayProps(
+                      inactiveDayStrStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      activeDayStrStyle: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+                      todayStrStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black),
+                      inactiveDayNumStyle: TextStyle(fontSize: 12, color: Colors.grey),
+                      activeDayNumStyle: TextStyle(fontSize: 12, color: Colors.white),
+                      todayNumStyle: TextStyle(fontSize: 12),
+                      height: 58,
+                      width: 58,
+                      todayHighlightColor: Color(0xff9da50a),
+                      todayStyle: DayStyle(
+                          borderRadius: 50
+                      ),
+                      dayStructure: DayStructure.dayStrDayNum,
+                      activeDayStyle: DayStyle(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                            color: Color.fromARGB(219, 243, 38, 7)
+                        ),
+                      ),
+                      inactiveDayStyle: DayStyle(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                            color: Colors.white
+                        ),
+                        borderRadius: 50.0,
+                      ),
+                    ),
                   ),
-                ),
-                inactiveDayStyle: DayStyle(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(50)),
-                      color: Colors.white
-                  ),
-                  borderRadius: 50.0,
                 ),
               ),
             ),
           ),
-          Expanded(child: mealPlanWidget(context, swapped, selected)),
+
+          // Expanded content with optimized scroll detection
+          Expanded(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (scrollNotification) {
+                if (scrollNotification is ScrollUpdateNotification) {
+                  // Throttle scroll events to prevent excessive rebuilds
+                  final now = DateTime.now();
+                  if (now.difference(_lastScrollTime).inMilliseconds < 50) {
+                    return false;
+                  }
+                  _lastScrollTime = now;
+
+                  if (scrollNotification.metrics.axis == Axis.vertical) {
+                    final currentOffset = scrollNotification.metrics.pixels;
+                    final scrollDelta = currentOffset - _lastScrollOffset;
+                    _lastScrollOffset = currentOffset;
+
+                    // Only trigger animation if we're not already animating
+                    if (!_isAnimating) {
+                      // Significant scroll up - hide with delay
+                      if (scrollDelta > 10 && _isDateTimeLineVisible) {
+                        _isAnimating = true;
+                        Future.delayed(const Duration(milliseconds: 50), () {
+                          if (mounted) {
+                            setState(() {
+                              _isDateTimeLineVisible = false;
+                            });
+                            // Reset animating flag after animation completes
+                            Future.delayed(_animationDuration, () {
+                              _isAnimating = false;
+                            });
+                          }
+                        });
+                      }
+                      // Significant scroll down - show with delay
+                      else if (scrollDelta < -10 && !_isDateTimeLineVisible) {
+                        _isAnimating = true;
+                        Future.delayed(const Duration(milliseconds: 50), () {
+                          if (mounted) {
+                            setState(() {
+                              _isDateTimeLineVisible = true;
+                            });
+                            // Reset animating flag after animation completes
+                            Future.delayed(_animationDuration, () {
+                              _isAnimating = false;
+                            });
+                          }
+                        });
+                      }
+                    }
+                  }
+                }
+                return false;
+              },
+              child: mealPlanWidget(context, swapped, selected),
+            ),
+          ),
         ],
       ),
     );

@@ -26,8 +26,9 @@ class AppThemes {
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: accentColor,
+      extendedTextStyle: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, fontSize: 14),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(25.0)
+        borderRadius: BorderRadius.circular(25.0),
       ),
     ),
     cardTheme: CardTheme(
@@ -46,6 +47,7 @@ class AppThemes {
           borderRadius: BorderRadius.circular(20),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        textStyle: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, fontSize: 14)
       ),
     ),
     iconTheme: const IconThemeData(color: thunderColor),
